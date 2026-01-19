@@ -1,0 +1,40 @@
+.sat-table {
+	color: #00ff66;
+	font-family:monospace;
+	font-size: 15px;
+	width: 550px;
+	margin-top: 10px;
+	margin-left: 20px;
+	background-color: #000000;
+}
+
+.sat-table .row {
+	white-space: nowrap;
+	border-bottom: 1px solid #333;
+	padding: 3px 0;
+}
+
+.sat-table .row.header {
+	font-weight: bold;
+	border-bottom: 2px solid #666;
+}
+
+.sat-table .item {
+	display: inline-block;
+	vertical-align: middle;
+	padding-right: 10px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.col-name     { width: 200px; }
+.col-lat      { width: 100px; text-align: right; }
+.col-lon      { width: 100px; text-align: right; }
+.col-distance { width: 100px; text-align: right; }
+
+.left 				{ text-align: left; }
+
+.skyplot {
+	float:right;
+	margin-right: 50px;
+}

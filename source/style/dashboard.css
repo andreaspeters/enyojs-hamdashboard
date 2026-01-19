@@ -1,0 +1,30 @@
+.utcTime {
+	margin-left:15px;
+	font-size:50px;
+	font-family:monospace;
+	white-space:nowrap;
+	color: yellow;
+}
+
+.lat-pos,
+.lon-pos,
+.loc-pos {
+	font-size:13px;
+	font-family:monospace;
+	white-space:nowrap;
+	color: #ffffff;
+	margin-left: 20px;
+}
+
+.aurora {
+	float: left;
+	width: 300px;
+	height: 300px;
+	padding: 10px;
+}
+
+body {
+	background-color: #000000;
+	color: #ffffff;
+}
+

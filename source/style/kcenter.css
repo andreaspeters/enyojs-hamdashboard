@@ -1,0 +1,44 @@
+body {
+	background: url(../../assets/bg.png);
+}
+
+div[id ^= app_mainView_kCMainView_menuList_page] {
+	margin-top: 50px;
+}
+
+div[id ^= app_mainView_kCMainView_menuList_generator_client] {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 5px;
+    border: 2px solid #bbbbbb;
+    background-color: #cccccc;
+    width: 200px;
+    height: 177px;
+    float: left;
+    margin-left: 20px;
+}
+
+#app_mainView_kCMainView_menuName {
+	height: 177px;
+}
+
+.list {
+    background-color: #dddddd;
+	border-right: 1px solid #bbbbbb;
+	border-left: 1px solid #bbbbbb;
+	margin-left: -1px;
+	box-shadow: -2px 0px 1px #888888;
+}
+
+.list .item {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+    border-bottom: 2px solid #bbbbbb;
+    background-color: #cccccc;
+	font-size: 14px;
+}
+
+ 
+
+

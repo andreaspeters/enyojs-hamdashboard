@@ -1,0 +1,49 @@
+div[id $= _invoiceNumber] {
+	font-weight: bold;
+}
+
+div[id $= _invoiceNumber], div[id $= _invoiceDate], div[id $= _invoicePaymentDate] {
+	float: left;
+	padding-right: 10px;
+}
+
+div[id $= _invoiceStatus], div[id $= _invoiceAmount] {
+	float: right;
+	padding-left: 10px;
+}
+
+div[id $= _account] {
+	padding-top: 10px;
+	font-size: 13px;
+}
+
+label[id $= _label]  {
+	font-weight: bold;
+	padding-left: 10px;
+	float: left;
+	width: 100px;
+}
+
+div[id $= _buttonGroup] {
+	font-size: 13px;
+	font-weight: bold;
+}
+
+div[id $= _account] input {
+	font-size: 13px;
+	width: 300px;
+}
+
+div[ id $= _buttonGroup] {
+	margin-left: 20px;
+}
+
+
+
+
+
+
+
+
+
+

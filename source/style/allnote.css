@@ -1,0 +1,49 @@
+#recordEditMetaTabs {
+	font-size: 12px;
+}
+
+div[id ^= app_mainView_kCMainView_allNoteView_menuList_control], div[id ^= app_mainView_kCMainView_allNoteView_middle_recordListPanel_recordList_generator_client] {
+	padding-top: 10px;
+	padding-bottom: 10px;
+	padding-left: 10px;
+	border-bottom: 2px solid #bbbbbb;
+	background-color: #cccccc;
+}
+
+div[id ^= app_mainView_kCMainView_allNoteView3_menuList_menuItemList_generator_client] {
+	padding-top: 5px;
+	padding-left: 10px;
+	font-weight: bold;
+	font-size: 14px;
+}
+
+#app_mainView_kCMainView_allNoteView_menuList_menuItemList_generator_client {
+	background-color: #dddddd;
+}
+
+
+button[type ^= button] {
+	margin-right: 5px;
+}
+
+#recordEditMetaTabs label { 
+	float: left;
+	width: 145px;
+	padding-left: 10px;
+}
+
+#app_mainView_kCMainView_allNoteView_right_recordEditPanel_category, #app_mainView_kCMainView_allNoteView_right_recordEditPanel_tags {
+	margin-left: 160px;
+	width: 165px;
+}
+
+#app_mainView_kCMainView_allNoteView_settings {
+	width: 300px;
+}
+
+
+
+
+
+
+

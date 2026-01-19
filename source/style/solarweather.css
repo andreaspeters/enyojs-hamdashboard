@@ -1,0 +1,38 @@
+.misc-table,
+.vhf-table,
+.hf-table {
+	color: #00ff66;
+	font-family:monospace;
+	font-size: 15px;
+	width: 230px;
+	margin-top: 10px;
+	margin-left: 10px;
+	background-color: #000000;
+}
+
+.header {
+  color: #00ccff;
+	font-weight: bold;
+	text-decoration: underline;
+}
+
+.hf-table {
+	float: left;
+}
+
+.vhf-table {
+	float: left;
+}
+
+.misc-table {
+	float: left;
+	width: 500px;
+}
+
+.label {
+	color: #ffffff;
+}
+
+.goodday {
+	padding: 10px;
+}

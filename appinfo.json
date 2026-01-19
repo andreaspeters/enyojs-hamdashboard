@@ -1,0 +1,10 @@
+{
+    "id": "biz.aventer.hamclock",
+    "version": "0.1.0",
+    "vendor": "AVENTER, codepoet",
+    "type": "web",
+    "main": "index.html",
+    "title": "HAMClock",
+    "uiRevision": "2"
+}
+
