@@ -1,9 +1,0 @@
-enyo.depends(
-	"shopPanel.js",
-	"shopProductList.js",
-	"shopProductView.js",
-	"shopCouponList.js",
-	"shopCategoryList.js",
-	"shopTaxList.js",
-	"views.js"
-);
