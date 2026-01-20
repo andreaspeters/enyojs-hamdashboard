@@ -2,7 +2,7 @@
 	color: #00ff66;
 	font-family:monospace;
 	font-size: 15px;
-	width: 550px;
+	width: 520px;
 	margin-top: 10px;
 	margin-left: 20px;
 	background-color: #000000;
@@ -28,9 +28,10 @@
 }
 
 .col-name     { width: 200px; }
-.col-lat      { width: 100px; text-align: right; }
-.col-lon      { width: 100px; text-align: right; }
-.col-distance { width: 100px; text-align: right; }
+.col-aos      { width: 70px; text-align: right; }
+.col-los      { width: 70px; text-align: right; }
+.col-dur 			{ width: 70px; text-align: right; }
+.col-distance { width: 70px; text-align: right; }
 
 .left 				{ text-align: left; }
 

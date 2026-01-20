@@ -13,16 +13,18 @@ enyo.kind({
 		{classes:"sat-table header", components: [
 			{classes: "row", components: [
 				{content: "Sat Name", classes: "col-name item left"},
-				{content: "Sat Lat", classes: "col-lat item left"},
-				{content: "Sat Long", classes: "col-lon item left"},
-				{content: "Sat Dist", classes: "col-distance item left"}
+				{content: "AOS", classes: "col-aos item right"},
+				{content: "LOS", classes: "col-los item right"},
+				{content: "Dur", classes: "col-dur item right"},
+				{content: "Dist", classes: "col-distance item right"}
 			]}
 		]},
 		{kind: "enyo.List", name: "satList", classes:"sat-table", onSetupItem: "setupSatList", components: [
 			{classes: "row", components: [
 				{name: "satName", classes: "col-name item", allowHtml: true},
-				{name: "satLat", classes: "col-lat item", allowHtml: true},
-				{name: "satLon", classes: "col-lon item", allowHtml: true},
+				{name: "satAos", classes: "col-aos item", allowHtml: true},
+				{name: "satLos", classes: "col-los item", allowHtml: true},
+				{name: "satDur", classes: "col-dur item", allowHtml: true},
 				{name: "satDistance", classes: "col-distance item", allowHtml: true}
 			]}
 		]},
@@ -92,9 +94,27 @@ enyo.kind({
 
 	setupSatList: function(inSender, inEvent) {
 		this.$.satName.setContent(this.tracks[inEvent.index].name);
-		this.$.satLat.setContent(this.tracks[inEvent.index].latitude);
-		this.$.satLon.setContent(this.tracks[inEvent.index].longitude);
-		this.$.satDistance.setContent(this.tracks[inEvent.index].distance_km);
+		this.$.satDistance.setContent(Math.round(this.tracks[inEvent.index].distance_km));
+		var pass = this.computeAosLosForSatellite(this.tracks[inEvent.index]);
+		if (pass != null) {
+			var aos = pass.aos.toLocaleTimeString("de-DE", {
+					hour:   "2-digit",
+			    minute: "2-digit",
+			    hour12: false,
+			    timeZone: "UTC"
+			  }
+			);
+			var los = pass.aos.toLocaleTimeString("de-DE", {
+					hour:   "2-digit",
+			    minute: "2-digit",
+			    hour12: false,
+			    timeZone: "UTC"
+			  }
+			);
+      this.$.satAos.setContent(aos);
+		  this.$.satLos.setContent(los);
+		  this.$.satDur.setContent(pass.duration_sec + "s");
+		}
 	},
 
 	drawSkyplotGrid: function(ctx, size) {
@@ -139,7 +159,7 @@ enyo.kind({
 	},
 
 	drawSatellitesOnSkyplot: function() {
-		var maxDistanceKm = 4000;
+		var maxDistanceKm = this.owner.config.distance;
 
 		var canvas = document.getElementById("skyplot");
 		if (!canvas) return;
@@ -151,70 +171,71 @@ enyo.kind({
 		var cy = size / 2;
 		var rOuter = size * 0.45;
 
+		// Background / Gitter
 		this.drawSkyplotGrid(ctx, size);
 
 		// Beobachter
 		var observerGd = {
 			latitude: satellite.degreesToRadians(this.owner.config.lat),
 			longitude: satellite.degreesToRadians(this.owner.config.lon),
-			height: 10 / 1000.0
+			height: 0
 		};
 
-		// Flugbahn ROT
-		if (this.tracks.length > 0) {
-			var sat = this.tracks[0];
+		// Schrift / Punkte
+		ctx.font = "10px monospace";
 
+		// ----- ALLE Satelliten -----
+		for (var i = 0; i < this.tracks.length; i++) {
+			var sat = this.tracks[i];
+
+			// Sicherheitschecks
+			if (!sat.tle1 || !sat.tle2) continue;
+			if (sat.elevation_deg <= 0) continue;
+			if (sat.distance_km > maxDistanceKm) continue;
+
+			// Flugbahn ROT
 			var track = this.computeSkyplotTrack(
 				sat,
 				observerGd,
 				15,   // ±15 Minuten
-				30    // 30 Sekunden Schritte
+				30    // 30 Sekunden
 			);
 
 			if (track.length > 1) {
 				ctx.strokeStyle = "#ff0000";
-				ctx.lineWidth = 2;
+				ctx.lineWidth = 1;
 				ctx.beginPath();
 
-				for (var i = 0; i < track.length; i++) {
-					var az = track[i].az * Math.PI / 180;
-					var el = track[i].el;
+				for (var j = 0; j < track.length; j++) {
+					var az = track[j].az * Math.PI / 180;
+					var el = track[j].el;
 
 					var r = (90 - el) / 90 * rOuter;
-
 					var x = cx + r * Math.sin(az);
 					var y = cy - r * Math.cos(az);
 
-					if (i === 0)
+					if (j === 0)
 						ctx.moveTo(x, y);
 					else
 						ctx.lineTo(x, y);
 				}
 				ctx.stroke();
 			}
-		}
 
-		// Satelliten WEISS
-		ctx.fillStyle = "#ffffff";
-		ctx.font = "10px monospace";
+			// Satellit WEISS
+			var az = sat.azimuth_deg * Math.PI / 180;
+			var el = sat.elevation_deg;
 
-		for (var i = 0; i < this.tracks.length; i++) {
-			var s = this.tracks[i];
-			if (s.elevation_deg <= 0) continue;
-			if (s.distance_km > maxDistanceKm) continue;
-
-			var az = s.azimuth_deg * Math.PI / 180;
-			var el = s.elevation_deg;
 			var r = (90 - el) / 90 * rOuter;
-
 			var x = cx + r * Math.sin(az);
 			var y = cy - r * Math.cos(az);
 
+			ctx.fillStyle = "#ffffff";
 			ctx.beginPath();
 			ctx.arc(x, y, 4, 0, Math.PI * 2);
 			ctx.fill();
 
-			ctx.fillText(s.name, x + 6, y);
+			ctx.fillText(sat.name, x + 6, y);
 		}
 	},
 
@@ -246,6 +267,65 @@ enyo.kind({
 		return points;
 	},
 
+	computeAosLosForSatellite: function(sat) {
+		var observerGd = {
+			latitude: satellite.degreesToRadians(this.owner.config.lat),
+			longitude: satellite.degreesToRadians(this.owner.config.lon),
+			height: 0
+		};
+
+		if (!sat.tle1 || !sat.tle2) return null;
+
+		var satrec;
+		try {
+			satrec = satellite.twoline2satrec(sat.tle1, sat.tle2);
+		} catch (e) {
+			return null;
+		}
+
+		var now = new Date();
+		var stepSeconds = 10;
+		var maxMinutes = 120; // max. 2h
+
+		var aos = null;
+		var los = null;
+		var wasAbove = false;
+
+		for (var t = 0; t <= maxMinutes * 60; t += stepSeconds) {
+			var time = new Date(now.getTime() + t * 1000);
+
+			var pv = satellite.propagate(satrec, time);
+			if (!pv.position) continue;
+
+			var gmst = satellite.gstime(time);
+			var ecf = satellite.eciToEcf(pv.position, gmst);
+			var look = satellite.ecfToLookAngles(observerGd, ecf);
+
+			var el = satellite.radiansToDegrees(look.elevation);
+
+			// AOS
+			if (!wasAbove && el > 0) {
+				aos = new Date(time.getTime());
+				wasAbove = true;
+			}
+
+			// LOS
+			if (wasAbove && el <= 0) {
+				los = new Date(time.getTime());
+				break;
+			}
+		}
+
+		if (!aos || !los) return null;
+
+		return {
+			aos: aos,
+			los: los,
+			duration_sec: Math.round((los - aos) / 1000)
+		};
+	},
+
+
 
 	downloadHamTLEs: function() {
 		var ajax = new enyo.Ajax({ url: this.tle });
@@ -274,7 +354,7 @@ enyo.kind({
 	processError: function(inSender, inResponse) {
 		this.tle = this.config.local;
 		this.downloadHamTLEs;
- 		//this.tle = this.config.server;
+ 		this.tle = this.config.server;
 	}
 
 });

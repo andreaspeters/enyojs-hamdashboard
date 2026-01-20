@@ -6,8 +6,9 @@ enyo.kind({
 		'server': "http://localhost/~andreas/webseite-aventer/index.php?article_id=128",
 		'username': "",
 		'password': "",
-		'lat': "",
-		'lon': "",
+		'lat': "53.7561",
+		'lon': "9.7125",
+		'distance': 10000,
 	},
 
 	components:[
@@ -52,8 +53,6 @@ enyo.kind({
 				},
 				function (err) {
 					enyo.log("GPS Error:", err.message);
-					self.config.lat = 53.7561;
-					self.config.lon = 9.7125;
 				},
 				{
 					enableHighAccuracy: true,
@@ -62,8 +61,6 @@ enyo.kind({
 				}
 			);
 		} else {
-				this.config.lat = 53.7561;
-				this.config.lon = 9.7125;
 		    enyo.log("Geolocation not possible");
 		}
 	},

@@ -5,8 +5,7 @@ TouchPad). It displays solar weather, band conditions, and the 11 closest
 ham‑radio satellites.
 
 It also works in any Chrome‑based browser, but you must disable web‑security
-so
-the page can fetch TLE data and solar‑weather information from external sites.
+so the page can fetch TLE data and solar‑weather information from external sites.
 
 Example:
 
@@ -19,8 +18,15 @@ Important: Never use this configuration for general web browsing. It is
 extremely insecure. Use it only for the dashboard and be sure to re‑enable
 security afterwards.
 
+## TLE Update
+
+I'm using TLE files from [Celestrak](https://celestrak.org/NORAD/elements/amateur.txt).
+The dashboard will update it once per day. As fallback, it's using an old file
+under `source/data`. For WebOS; I think I will change it to the internal user
+storage.
+
 ## Screenshot
 
-![clipboard_20260120152929.bmp](vx_images/clipboard_20260120152929.bmp)
+![clipboard_20260120163645.bmp](vx_images/clipboard_20260120163645.bmp)
 
 
