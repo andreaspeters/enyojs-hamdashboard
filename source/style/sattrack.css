@@ -2,7 +2,7 @@
 	color: #00ff66;
 	font-family:monospace;
 	font-size: 15px;
-	width: 520px;
+	width: 540px;
 	margin-top: 10px;
 	margin-left: 20px;
 	background-color: #000000;
@@ -28,8 +28,8 @@
 }
 
 .col-name     { width: 200px; }
-.col-aos      { width: 70px; text-align: right; }
-.col-los      { width: 70px; text-align: right; }
+.col-aos      { width: 80px; text-align: right; }
+.col-los      { width: 80px; text-align: right; }
 .col-dur 			{ width: 70px; text-align: right; }
 .col-distance { width: 70px; text-align: right; }
 
