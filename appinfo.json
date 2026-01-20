@@ -1,10 +1,12 @@
 {
-    "id": "biz.aventer.hamclock",
-    "version": "0.1.0",
-    "vendor": "AVENTER, codepoet",
+    "id": "biz.aventer.hamdashboard",
+    "version": "0.2.0",
+    "vendor": "AVENTER",
     "type": "web",
     "main": "index.html",
-    "title": "HAMClock",
-    "uiRevision": "2"
+    "title": "HAM Dashboard",
+    "uiRevision": "2",
+    "exhibitionMode": true,
+    "dockMode": true
 }
 
