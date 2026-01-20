@@ -6,8 +6,8 @@ enyo.kind({
 		'server': "http://localhost/~andreas/webseite-aventer/index.php?article_id=128",
 		'username': "",
 		'password': "",
-		'lat': "53.7561",
-		'lon': "9.7125",
+		'lat': 53.7561,
+		'lon': 9.7125,
 		'distance': 10000,
 	},
 
