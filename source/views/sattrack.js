@@ -34,8 +34,6 @@ enyo.kind({
 		setInterval(enyo.bind(this, this.updateSatData), 2000);
 		setInterval(enyo.bind(this, this.drawSatellitesOnSkyplot), 2000);
 		setInterval(enyo.bind(this, this.downloadHamTLEs), 1440000);
-		//this.downloadHamTLEs(this.config.server);
-		//this.downloadHamTLEs("source/data/amateur.txt");
 	},
 
 	getHamSatellitesByDistance: function() {
@@ -64,6 +62,8 @@ enyo.kind({
 				var look = satellite.ecfToLookAngles(observerGd, ecf);
 
 				this.tracks.push({
+				    tle1: sat.tle1,
+				    tle2: sat.tle2,
 				    name: sat.name,
 				    latitude: satellite.radiansToDegrees(geodetic.latitude),
 				    longitude: satellite.radiansToDegrees(geodetic.longitude),
@@ -142,6 +142,8 @@ enyo.kind({
 		var maxDistanceKm = 4000;
 
 		var canvas = document.getElementById("skyplot");
+		if (!canvas) return;
+
 		var ctx = canvas.getContext("2d");
 
 		var size = canvas.width;
@@ -151,14 +153,58 @@ enyo.kind({
 
 		this.drawSkyplotGrid(ctx, size);
 
+		// Beobachter
+		var observerGd = {
+			latitude: satellite.degreesToRadians(this.owner.config.lat),
+			longitude: satellite.degreesToRadians(this.owner.config.lon),
+			height: 10 / 1000.0
+		};
+
+		// Flugbahn ROT
+		if (this.tracks.length > 0) {
+			var sat = this.tracks[0];
+
+			var track = this.computeSkyplotTrack(
+				sat,
+				observerGd,
+				15,   // ±15 Minuten
+				30    // 30 Sekunden Schritte
+			);
+
+			if (track.length > 1) {
+				ctx.strokeStyle = "#ff0000";
+				ctx.lineWidth = 2;
+				ctx.beginPath();
+
+				for (var i = 0; i < track.length; i++) {
+					var az = track[i].az * Math.PI / 180;
+					var el = track[i].el;
+
+					var r = (90 - el) / 90 * rOuter;
+
+					var x = cx + r * Math.sin(az);
+					var y = cy - r * Math.cos(az);
+
+					if (i === 0)
+						ctx.moveTo(x, y);
+					else
+						ctx.lineTo(x, y);
+				}
+				ctx.stroke();
+			}
+		}
+
+		// Satelliten WEISS
+		ctx.fillStyle = "#ffffff";
+		ctx.font = "10px monospace";
+
 		for (var i = 0; i < this.tracks.length; i++) {
-			var sat = this.tracks[i];
-			if (sat.elevation_deg <= 0) continue;
-			if (sat.distance_km > maxDistanceKm) continue;
+			var s = this.tracks[i];
+			if (s.elevation_deg <= 0) continue;
+			if (s.distance_km > maxDistanceKm) continue;
 
-			var az = sat.azimuth_deg * Math.PI / 180;
-			var el = sat.elevation_deg;
-
+			var az = s.azimuth_deg * Math.PI / 180;
+			var el = s.elevation_deg;
 			var r = (90 - el) / 90 * rOuter;
 
 			var x = cx + r * Math.sin(az);
@@ -166,19 +212,45 @@ enyo.kind({
 
 			ctx.beginPath();
 			ctx.arc(x, y, 4, 0, Math.PI * 2);
-			ctx.fillStyle = "#ffffff";
 			ctx.fill();
 
-			ctx.font = "10px monospace";
-			ctx.fillText(sat.name, x + 6, y);
+			ctx.fillText(s.name, x + 6, y);
 		}
 	},
+
+	computeSkyplotTrack: function(sat, observerGd, minutes, stepSeconds) {
+		var now = new Date();
+		var points = [];
+
+		var satrec = satellite.twoline2satrec(sat.tle1, sat.tle2);
+
+		for (var t = -minutes * 60; t <= minutes * 60; t += stepSeconds) {
+			var time = new Date(now.getTime() + t * 1000);
+
+			var pv = satellite.propagate(satrec, time);
+			if (!pv.position) continue;
+
+			var gmst = satellite.gstime(time);
+			var ecf = satellite.eciToEcf(pv.position, gmst);
+			var look = satellite.ecfToLookAngles(observerGd, ecf);
+
+			var el = satellite.radiansToDegrees(look.elevation);
+			if (el <= 0) continue;
+
+			points.push({
+				az: satellite.radiansToDegrees(look.azimuth),
+				el: el
+			});
+		}
+
+		return points;
+	},
+
 
 	downloadHamTLEs: function() {
 		var ajax = new enyo.Ajax({ url: this.tle });
 		ajax.go();
 		ajax.response(this, "processHamTLEs");
-		// handle error
 		ajax.error(this, "processError");
 	},
 
@@ -202,6 +274,7 @@ enyo.kind({
 	processError: function(inSender, inResponse) {
 		this.tle = this.config.local;
 		this.downloadHamTLEs;
+ 		//this.tle = this.config.server;
 	}
 
 });
