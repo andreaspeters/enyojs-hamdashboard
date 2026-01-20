@@ -104,7 +104,7 @@ enyo.kind({
 			    timeZone: "UTC"
 			  }
 			);
-			var los = pass.aos.toLocaleTimeString("de-DE", {
+			var los = pass.los.toLocaleTimeString("de-DE", {
 					hour:   "2-digit",
 			    minute: "2-digit",
 			    hour12: false,
