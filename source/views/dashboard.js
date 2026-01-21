@@ -26,11 +26,28 @@ enyo.kind({
 					{kind: "SolarWeatherView" },
         ]},
 
-				{kind: "SatTrackView" },
+				{kind: "FittableColumns", style: "padding:10px;", components: [
+					{kind: "SatTrackView"}, // feste Breite für links
+					{name: "SatDashboardCarousel",
+						kind: "enyo.Panels",
+						pattern: "carousel",
+						draggable: true,
+						wrap: true,
+						animate: true,
+						index: 0,
 
-				{fit: true},
-				{kind: "onyx.Toolbar", style:"height:45px; font-size: 17px;", components:[
-				]}
+						fit: true,
+						style: "height: 400px;",
+						components: [
+						    {kind: "SatWorldView", fit: true},
+						    {kind: "SatPolarView", fit: true}
+						]
+					}
+				]},
+
+
+				{fit: true}
+
 			]}
 		]},
 	],
