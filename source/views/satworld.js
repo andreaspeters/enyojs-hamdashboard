@@ -3,9 +3,6 @@ enyo.kind({
 	classes: "sattrack-panel",
 	config: {
 		'geo':  "source/data/world.geojson",
-		'geomagNorth': {lat: 78.5, lon: -42.0},
-		'geomagSouth': {lat: -78.5, lon: 78.0},
-
 	},
 	components: [
 		{content: "<canvas id=\"worldmap\" width=\"970px\" height=\"400\"></canvas>", classes:"skyplot", allowHtml: true},
@@ -13,7 +10,7 @@ enyo.kind({
 
 	rendered: function() {
 		this.loadWorldGeoJSON();
-		setInterval(enyo.bind(this, this.drawWorldMapWithSatellites), 2000);
+		setInterval(enyo.bind(this, this.drawWorldMapWithSatellites), 10000);
 	},
 
 	loadWorldGeoJSON: function() {
@@ -24,74 +21,6 @@ enyo.kind({
 
 	onWorldGeoJSONLoaded: function(inSender, inResponse) {
 		this.geojson = inResponse;
-	},
-
-	kpToAuroraLatitude: function(kp) {
-		var lat = 70 - kp * 5;
-		if (lat < 45) lat = 45;
-		return lat;
-	},
-
-	computeAuroraRingPoints: function(center, radiusDeg, numPoints) {
-		var pts = [];
-		numPoints = numPoints || 120;
-
-		for (var i = 0; i <= numPoints; i++) {
-			var theta = (i / numPoints) * Math.PI * 2;
-
-			// sphärische Geometrie:
-			// kleine Kreisformel auf Kugeloberfläche
-			var φ1 = center.lat * Math.PI/180;
-			var λ1 = center.lon * Math.PI/180;
-
-			var r = radiusDeg * Math.PI/180;
-
-			var φ2 = Math.asin(
-				Math.sin(φ1)*Math.cos(r) +
-				Math.cos(φ1)*Math.sin(r)*Math.cos(theta)
-			);
-
-			var λ2 = λ1 + Math.atan2(
-				Math.sin(theta)*Math.sin(r)*Math.cos(φ1),
-				Math.cos(r) - Math.sin(φ1)*Math.sin(φ2)
-			);
-
-			pts.push({
-				lon: (λ2 * 180/Math.PI),
-				lat: (φ2 * 180/Math.PI)
-			});
-		}
-
-		return pts;
-	},
-
-	auroraRadiusForKp: function(kp) {
-		return Math.max(10, Math.min(60, 15 + kp * 5));
-	},
-
-	drawAuroraRingGradient: function(ctx, w, h, ringPoints, color) {
-		var grad = ctx.createRadialGradient(
-			w/2, h/2, 10,
-			w/2, h/2, Math.max(w,h)
-		);
-
-		grad.addColorStop(0, "rgba(0,255,100,0.2)");
-		grad.addColorStop(0.3, "rgba(0,255,100,0.15)");
-		grad.addColorStop(1, "rgba(0,255,100,0)");
-
-		ctx.fillStyle = grad;
-		ctx.beginPath();
-
-		for (var i = 0; i < ringPoints.length; i++) {
-			var p = ringPoints[i];
-			var x = (p.lon + 180) / 360 * w;
-			var y = (90 - p.lat) / 180 * h;
-			if (i == 0) ctx.moveTo(x,0);
-			else ctx.lineTo(x,y);
-		}
-
-		ctx.closePath();
-		ctx.fill();
 	},
 
 	drawWorldMapWithSatellites: function() {
@@ -110,17 +39,6 @@ enyo.kind({
 
 		// Continets
 		this.drawWorldContinents(ctx, w, h);
-
-		// Polarlichter
-		if (this.owner.$.solarWeatherView.weather.kindex) {
-			var kp = this.owner.$.solarWeatherView.weather.kindex;
-			var rad = this.auroraRadiusForKp(kp);
-			var northRing = this.computeAuroraRingPoints(this.config.geomagNorth, rad, 180);
-			this.drawAuroraRingGradient(ctx, w, h, northRing);
-
-			var southRing = this.computeAuroraRingPoints(this.config.geomagSouth, rad, 180);
-			this.drawAuroraRingGradient(ctx, w, h, southRing);
-		}
 
 		// Grid
 		ctx.strokeStyle = "#333333";

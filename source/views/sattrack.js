@@ -32,7 +32,7 @@ enyo.kind({
 	rendered: function() {
 		this.tle = this.config.local;
 		this.downloadHamTLEs();
-		setInterval(enyo.bind(this, this.updateSatData), 2000);
+		setInterval(enyo.bind(this, this.updateSatData), 5000);
 		setInterval(enyo.bind(this, this.downloadHamTLEs), 1440000);
 	},
 
