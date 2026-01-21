@@ -183,6 +183,21 @@ enyo.kind({
 			ctx.font = "10px monospace";
 			ctx.fillText(sat.name, xNow + 4, yNow);
 		}
+
+		// Draw My Pos RED
+		var latNow = this.owner.config.lat;
+		var lonNow = this.owner.config.lon;
+
+		if (lonNow > 180) lonNow -= 360;
+		if (lonNow < -180) lonNow += 360;
+
+		var xNow = (lonNow + 180) / 360 * w;
+		var yNow = (90 - latNow) / 180 * h;
+
+		ctx.fillStyle = "#ff0000";
+		ctx.beginPath();
+		ctx.arc(xNow, yNow, 2, 0, Math.PI * 2);
+		ctx.fill();
 	},
 
 	drawWorldContinents: function(ctx, w, h) {
