@@ -3,14 +3,29 @@ enyo.kind({
 	classes: "sattrack-panel",
 	config: {
 		'geo':  "source/data/world.geojson",
+		'kindex': "https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json"
 	},
+	aurora: [],
 	components: [
 		{content: "<canvas id=\"worldmap\" width=\"970px\" height=\"400\"></canvas>", classes:"skyplot", allowHtml: true},
 	],
 
 	rendered: function() {
 		this.loadWorldGeoJSON();
+		this.loadAuroraKIndexJSON();
 		setInterval(enyo.bind(this, this.drawWorldMapWithSatellites), 2000);
+		setInterval(enyo.bind(this, this.drawAurora), 2000);
+	},
+
+	loadAuroraKIndexJSON: function() {
+		var ajax = new enyo.Ajax({url: this.config.kindex, handleAs: "json"});
+		ajax.response(this, "onLoadAuroraKIndexJSON");
+		ajax.go();
+	},
+
+	onLoadAuroraKIndexJSON: function(inSender, inResponse) {
+		this.kindex = inResponse;
+		this.aurora = this.kindex[1];
 	},
 
 	loadWorldGeoJSON: function() {
@@ -21,6 +36,33 @@ enyo.kind({
 
 	onWorldGeoJSONLoaded: function(inSender, inResponse) {
 		this.geojson = inResponse;
+	},
+
+	drawAurora: function() {
+		var canvas = document.getElementById("worldmap");
+		if (!canvas) return;
+
+		var ctx = canvas.getContext("2d");
+		var w = canvas.width;
+		var h = canvas.height;
+
+	  var kp = this.aurora.kp || 3;
+	  var radius = 50 + kp * 15; // einfache Skalierung
+
+	  var color = "rgba(0,255,0,0.5)";
+
+	  var centerX = w / 2;
+	  var centerY = (this.aurora.hemisphere === "south") ? h - 50 : 50;
+
+	  ctx.beginPath();
+	  ctx.moveTo(centerX - radius, centerY);
+	  ctx.quadraticCurveTo(centerX, centerY - (this.aurora.hemisphere === "south" ? -radius : radius), centerX + radius, centerY);
+	  ctx.lineTo(centerX + radius, centerY + (this.aurora.hemisphere === "south" ? 20 : -20));
+	  ctx.lineTo(centerX - radius, centerY + (this.aurora.hemisphere === "south" ? 20 : -20));
+		ctx.stroke();
+
+	  ctx.fillStyle = color;
+	  ctx.fill();
 	},
 
 	drawWorldMapWithSatellites: function() {
