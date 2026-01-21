@@ -25,6 +25,14 @@ The dashboard will update it once per day. As fallback, it's using an old file
 under `source/data`. For WebOS; I think I will change it to the internal user
 storage.
 
+## Credits
+
+- Free vector world map data @ naturalearthdata.com.
+- Solarweather data @ hamqsl.com
+- TLE data @ celestrak.org
+- Aurora data @ noaa.gov
+- Satellite JS lib @ github.com/shashwatak under MIT License
+
 ## Screenshot
 
 ![clipboard_20260120163645.bmp](vx_images/clipboard_20260120163645.bmp)
