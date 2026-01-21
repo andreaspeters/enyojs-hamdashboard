@@ -5,7 +5,7 @@ enyo.kind({
 		'geo':  "source/data/world.geojson",
 	},
 	components: [
-		{content: "<canvas id=\"worldmap\" width=\"400\" height=\"400\"></canvas>", classes:"skyplot", allowHtml: true},
+		{content: "<canvas id=\"worldmap\" width=\"970px\" height=\"400\"></canvas>", classes:"skyplot", allowHtml: true},
 	],
 
 	rendered: function() {
