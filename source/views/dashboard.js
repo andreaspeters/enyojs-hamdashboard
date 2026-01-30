@@ -121,8 +121,10 @@ enyo.kind({
 	},
 
 	latLonToMaidenhead: function() {
-		var lat = this.config.lat;
-		var lon = this.config.lon;
+		var lat = parseFloat(this.config.lat);
+		var lon = parseFloat(this.config.lon);
+
+		if (isNaN(lat) || isNaN(lon)) return null;
 
 		// Validierung
 		if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
@@ -144,8 +146,8 @@ enyo.kind({
 		var squareLat = Math.floor(lat % 10);
 
 		// Subsquare (aa–xx)
-		var subLon = Math.floor(((lon % 2) / 2) * 24);
-		var subLat = Math.floor((lat % 1) * 24);
+    var subLon = Math.floor((lon % 2) * 12);
+    var subLat = Math.floor((lat % 1) * 24);
 
 		return String.fromCharCode(A + fieldLon, A + fieldLat) +
 		squareLon.toString() + squareLat.toString() +	String.fromCharCode(A + subLon, A + subLat);
@@ -169,17 +171,15 @@ enyo.kind({
 		this.config.lon = this.$.longitude.getValue();
 		this.config.gps = this.$.cbGPS.checked;
 
-console.log(this.$.latitude.getContent());
-
 		localStorage.setItem("latitude", this.$.latitude.getValue());
 		localStorage.setItem("longitude", this.$.longitude.getValue());
 		localStorage.setItem("gps", this.$.cbGPS.checked);
 
-		this.$.settings.hide();
-
 		this.$.lat.setContent(this.config.lat);
 		this.$.lon.setContent(this.config.lon);
 		this.$.loc.setContent(this.latLonToMaidenhead());
+
+		this.$.settings.hide();
 	},
 
 	btnClickCancelSettings: function(inSender, inEvent) {
