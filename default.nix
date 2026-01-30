@@ -15,7 +15,6 @@ buildInputs = [
 
 SOURCE_DATE_EPOCH = 315532800;
 PROJDIR = "/tmp/node-dev";
-S_NETWORK="host";
 S_USB_DEVICE="webos";
 S_IMAGE="localhost:5000/ubuntu_build:jammy";
 

@@ -7,7 +7,7 @@ enyo.kind({
 		'lat': 53.7561,
 		'lon': 9.7125,
 		'distance': 10000,
-		'gps': false,
+		'gps': true,
 	},
 
 	components:[
@@ -49,7 +49,7 @@ enyo.kind({
 		]},
 
 		// Configuration Dialog
-		{kind: "onyx.Popup", name: "settings", floating: true, centered: true, modal: true, scrim:true, components: [
+		{kind: "onyx.Popup", name: "settings", width:"400px", floating: true, centered: true, modal: true, scrim:true, components: [
 			{tag: "hr", content: "Settings"},
 			{tag: "p", components: [
 				{kind: "onyx.InputDecorator", components: [
@@ -73,8 +73,8 @@ enyo.kind({
 	rendered: function() {
 		this.inherited(arguments);
 
-		this.config.lat = localStorage.getItem('latitude');
-		this.config.lon = localStorage.getItem('longitude');
+		this.config.lat = parseFloat(localStorage.getItem('latitude'));
+		this.config.lon = parseFloat(localStorage.getItem('longitude'));
 		this.config.gps = localStorage.getItem('gps') === "true" ? true : false;
 
 		this.getCurrentUTCTime();
@@ -167,8 +167,8 @@ enyo.kind({
 	},
 
 	btnClickSaveSettings: function(inSender, inEvent) {
-		this.config.lat = this.$.latitude.getValue();
-		this.config.lon = this.$.longitude.getValue();
+		this.config.lat = parseFloat(this.$.latitude.getValue());
+		this.config.lon = parseFloat(this.$.longitude.getValue());
 		this.config.gps = this.$.cbGPS.checked;
 
 		localStorage.setItem("latitude", this.$.latitude.getValue());
