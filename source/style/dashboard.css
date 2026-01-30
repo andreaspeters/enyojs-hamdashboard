@@ -6,6 +6,16 @@
 	color: yellow;
 }
 
+.btn-settings {
+	height:30px !important;
+	float:right;
+	margin: 10px;
+}
+
+.checkbox {
+	padding-right: 10px;
+}
+
 .lat-pos,
 .lon-pos,
 .loc-pos {
