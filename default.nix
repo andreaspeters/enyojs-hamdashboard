@@ -11,6 +11,7 @@ buildInputs = [
 	webos.novacom
 	webos.cmake-modules
 	ares-cli
+  minify
 ];
 
 SOURCE_DATE_EPOCH = 315532800;

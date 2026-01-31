@@ -27,15 +27,23 @@ storage.
 
 ## Credits
 
-- Free vector world map data @ naturalearthdata.com.
+- Free vector world map data @ naturalearthdata.com
 - Solarweather data @ hamqsl.com
 - TLE data @ celestrak.org
-- Aurora data @ noaa.gov
+- PSK Reporter data @ pskreporter.info
+
 - Satellite JS lib @ github.com/shashwatak under MIT License
+- MQTT JS lib @ github.com/mqttjs/MQTT.js under MIT License
+
+To use older Chrome browsers with MQTT:
+
+- Core-JS JS lib @ github.com/zloirock/core-js under MIT License
+- Typedarray JS lib to support older browser @ github.com/inexorabletash/polyfill under MIT License
 
 ## Screenshot
 
 ![clipboard_20260120163645.bmp](vx_images/clipboard_20260120163645.bmp)
 ![clipboard_20260121190005.bmp](vx_images/clipboard_20260121190005.bmp)
+![clipboard_20260131141445.bmp](vx_images/clipboard_20260131141445.bmp)
 ![clipboard_20260120184127.bmp](vx_images/clipboard_20260120184127.bmp)
 

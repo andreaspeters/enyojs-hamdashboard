@@ -213,10 +213,17 @@ enyo.kind({
 	},
 
 	btnClickSaveSettings: function(inSender, inEvent) {
-		this.config.lat = parseFloat(this.$.latitude.getValue());
-		this.config.lon = parseFloat(this.$.longitude.getValue());
+		if (this.$.latitude.getValue() != "") {
+				this.config.lat = parseFloat(this.$.latitude.getValue());
+		}
+		if (this.$.longitude.getValue() != "") {
+				this.config.lon = parseFloat(this.$.longitude.getValue());
+		}
+		if (this.$.callsign.getValue() != "") {
+				this.config.callsign = this.$.callsign.getValue();
+		}
+
 		this.config.gps = this.$.cbGPS.checked;
-		this.config.callsign = this.$.callsign.getValue();
 
 		localStorage.setItem("latitude", this.$.latitude.getValue());
 		localStorage.setItem("longitude", this.$.longitude.getValue());
