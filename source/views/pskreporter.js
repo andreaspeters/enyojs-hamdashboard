@@ -9,11 +9,16 @@ enyo.kind({
 	map: null,
 	connect: false,
 	timer: null,
+	data: [],
 	components: [
 		{content: "<canvas id=\"worldmap-psk\" width=\"970px\" height=\"400\"></canvas>", classes:"skyplot", allowHtml: true},
 	],
 
 	rendered: function() {
+		this.zoom = 1;
+		this.offsetX = 0;
+		this.offsetY = 0;
+		this.hasNode().addEventListener("wheel", this.bindSafely(this.wheelHandler));
 	},
 
 	refresh: function() {
@@ -21,7 +26,7 @@ enyo.kind({
 			this.getConnectMQTT();
 		}
 		if (this.map == null) {
-			this.map = this.owner.$.satWorldView.drawWorldMap("worldmap-psk");
+			this.map = this.owner.$.satWorldView.drawWorldMap("worldmap-psk", this.zoom, this.offsetX, this.offsetY);
 		}
 	},
 
@@ -52,10 +57,9 @@ enyo.kind({
 
 		this.client.on("message", function (topic, message) {
 			var text = JSON.parse(message.toString());
+			self.data.push(text);
 			var s = self.maidenheadToLatLon(text.sl);
 			var r = self.maidenheadToLatLon(text.rl);
-
-			console.log(text);
 
 			if (s != null && r != null) {
 				self.drawLine(self.map.ctx, s.lat, s.lon, r.lat, r.lon, text.rc, self.map.w, self.map.h, self.randomColor());
@@ -243,9 +247,46 @@ enyo.kind({
 		var bHex = b.toString(16).padStart(2, "0");
 
 		return "#" + rHex + gHex + bHex;
-	}
+	},
 
+	wheelHandler: function(inEvent) {
+  	inEvent.preventDefault();
 
+  	const zoomFactor = 1.1;
+
+  	// Mousposition
+  	const rect = this.hasNode().getBoundingClientRect();
+  	const mouseX = inEvent.clientX - rect.left;
+  	const mouseY = inEvent.clientY - rect.top;
+
+  	const oldZoom = this.zoom;
+
+  	// Zoom in/out
+  	if (inEvent.deltaY < 0) {
+  	    this.zoom *= zoomFactor;
+  	} else {
+  	    this.zoom /= zoomFactor;
+  	}
+
+  	this.offsetX = mouseX - (mouseX - this.offsetX) * (this.zoom / oldZoom);
+  	this.offsetY = mouseY - (mouseY - this.offsetY) * (this.zoom / oldZoom);
+
+		this.owner.$.satWorldView.drawWorldMap("worldmap-psk", this.zoom, this.offsetX, this.offsetY)
+
+		// repaint old data
+		for (var i = 0; i < self.data.length; i++) {
+			var text = this.data[i];
+			console.log(text);
+			var s = this.maidenheadToLatLon(text.sl);
+			var r = this.maidenheadToLatLon(text.rl);
+
+			if (s != null && r != null) {
+				this.drawLine(this.map.ctx, s.lat, s.lon, r.lat, r.lon, text.rc, this.map.w, this.map.h, this.randomColor());
+			}
+		}
+
+  	return false;
+	},
 });
 
 

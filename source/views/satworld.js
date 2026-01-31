@@ -37,12 +37,12 @@ enyo.kind({
 	onWorldGeoJSONLoaded: function(inSender, inResponse) {
 		this.geojson = inResponse;
 		if (this.map == null) {
-			this.map = this.drawWorldMap("worldmap");
+			this.map = this.drawWorldMap("worldmap", 1, 0, 0);
 		}
 	},
 
 
-	drawWorldMap: function(name) {
+	drawWorldMap: function(name, zoom, offsetX, offsetY) {
 		var canvas = document.getElementById(name);
 		if (!canvas) return;
 
@@ -54,6 +54,10 @@ enyo.kind({
 		ctx.clearRect(0, 0, w, h);
 		ctx.fillStyle = "#000000";
 		ctx.fillRect(0, 0, w, h);
+
+    ctx.save();
+    ctx.translate(offsetX, offsetY);
+    ctx.scale(zoom, zoom);
 
 		this.drawWorldContinents(ctx, w, h);
 
