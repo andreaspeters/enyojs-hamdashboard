@@ -7,6 +7,7 @@ enyo.kind({
 		'lat': 53.7561,
 		'lon': 9.7125,
 		'distance': 10000,
+		'callsign': "",
 		'gps': true,
 	},
 
@@ -14,7 +15,8 @@ enyo.kind({
 		{kind: "Panels", name: "productPanel", fit: true, components: [
 			{kind: "FittableRows", fit: true, components: [
 				{kind: "FittableColumns", fit: true, components: [
-					{name: "utcTime", classes: "utcTime", allowHtml: true},
+					{name: "utcTime", classes: "utcTime"},
+					{name: "call", classes: "callsign"},
 					{kind: "onyx.IconButton", src:"assets/enyo-icons-master/spaz_enyo1_icons/icon-settings.png", classes:"btn-settings", ondown: "btnClickSettings"}
 				]},
 
@@ -42,6 +44,7 @@ enyo.kind({
 					 		{kind: "SatPolarView"},
 						]},
 				 		{kind: "SatWorldView"},
+						{kind: "PSKReporterView"},
 				 	]
 				},
 				{fit: true}
@@ -53,17 +56,26 @@ enyo.kind({
 			{tag: "hr", content: "Settings"},
 			{tag: "p", components: [
 				{kind: "onyx.InputDecorator", components: [
+					{kind: "onyx.Input", name: "callsign", placeholder: "Callsign"}
+				]},
+			]},
+			{tag: "p", components: [
+				{kind: "onyx.InputDecorator", components: [
 					{kind: "onyx.Input", name: "latitude", placeholder: "Latitude"}
 				]}
 			]},
-			{kind: "onyx.InputDecorator", components: [
-				{kind: "onyx.Input", name: "longitude", placeholder: "Longitude"}
+			{tag: "p", components: [
+				{kind: "onyx.InputDecorator", components: [
+					{kind: "onyx.Input", name: "longitude", placeholder: "Longitude"}
+				]},
 			]},
 			{tag: "p", components: [
 				{kind: "FittableColumns", components: [
 					{kind: "enyo.Checkbox", name: "cbGPS", checked: true, classes:"checkbox"},
 					{content: "Enable GPS"}
 				]},
+			]},
+			{tag: "p", components: [
 				{kind: "onyx.Button", ondown: "btnClickSaveSettings", name: "btnSaveSettings", style: "width: 50%;", content: "Save", classes: "onyx-affirmative"},
 				{kind: "onyx.Button", ondown: "btnClickCancelSettings", name: "btnCancelSettings", style: "width: 50%;", content: "Cancel", classes: "onyx-negative", style: "margin-left: 10px;"},
 			]}
@@ -76,6 +88,7 @@ enyo.kind({
 		this.config.lat = parseFloat(localStorage.getItem('latitude'));
 		this.config.lon = parseFloat(localStorage.getItem('longitude'));
 		this.config.gps = localStorage.getItem('gps') === "true" ? true : false;
+		this.config.callsign = localStorage.getItem('callsign');
 
 		this.getCurrentUTCTime();
 		setInterval(enyo.bind(this, this.getCurrentUTCTime), 1000);
@@ -115,9 +128,7 @@ enyo.kind({
 		this.$.lat.setContent(this.config.lat);
 		this.$.lon.setContent(this.config.lon);
 		this.$.loc.setContent(this.latLonToMaidenhead());
-
-		localStorage.setItem('latitude', this.config.lat);
-		localStorage.setItem('longitude', this.config.lon);
+		this.$.call.setContent(this.config.callsign);
 	},
 
 	latLonToMaidenhead: function() {
@@ -161,6 +172,7 @@ enyo.kind({
 	btnClickSettings: function(inSender, inEvent) {
 		this.$.latitude.setContent(this.config.lat);
 		this.$.longitude.setContent(this.config.lon);
+		this.$.callsign.setContent(this.config.callsign);
 		this.$.cbGPS.checked = this.config.gps;
 
 		this.$.settings.show();
@@ -170,14 +182,17 @@ enyo.kind({
 		this.config.lat = parseFloat(this.$.latitude.getValue());
 		this.config.lon = parseFloat(this.$.longitude.getValue());
 		this.config.gps = this.$.cbGPS.checked;
+		this.config.callsign = this.$.callsign.getValue();
 
 		localStorage.setItem("latitude", this.$.latitude.getValue());
 		localStorage.setItem("longitude", this.$.longitude.getValue());
 		localStorage.setItem("gps", this.$.cbGPS.checked);
+		localStorage.setItem("callsign", this.$.callsign.getValue());
 
 		this.$.lat.setContent(this.config.lat);
 		this.$.lon.setContent(this.config.lon);
 		this.$.loc.setContent(this.latLonToMaidenhead());
+		this.$.call.setContent(this.config.callsign);
 
 		this.$.settings.hide();
 	},

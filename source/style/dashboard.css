@@ -1,9 +1,15 @@
+.callsign,
 .utcTime {
 	margin-left:15px;
 	font-size:50px;
 	font-family:monospace;
 	white-space:nowrap;
 	color: yellow;
+	width:400px;
+}
+
+.callsign {
+	width:200px !important;
 }
 
 .btn-settings {
@@ -14,8 +20,8 @@
 
 .checkbox {
 	padding-right: 10px;
-	width: 32px;
-	height: 32px !important;
+	width: 15px;
+	height: 15px !important;
 }
 
 .lat-pos,

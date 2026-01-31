@@ -4,6 +4,7 @@ enyo.kind({
 	config: {
 		'geo':  "source/data/world.geojson",
 	},
+	map: null,
 	components: [
 		{content: "<canvas id=\"worldmap\" width=\"970px\" height=\"400\"></canvas>", classes:"skyplot", allowHtml: true},
 	],
@@ -21,23 +22,25 @@ enyo.kind({
 
 	onWorldGeoJSONLoaded: function(inSender, inResponse) {
 		this.geojson = inResponse;
+		if (this.map == null) {
+			this.map = this.drawWorldMap("worldmap");
+		}
 	},
 
-	drawWorldMapWithSatellites: function() {
-		var canvas = document.getElementById("worldmap");
+
+	drawWorldMap: function(name) {
+		var canvas = document.getElementById(name);
 		if (!canvas) return;
 
-		var ctx = canvas.getContext("2d");
+		ctx = canvas.getContext("2d");
 		var w = canvas.width;
 		var h = canvas.height;
-		var now = new Date();
 
 		// Background
 		ctx.clearRect(0, 0, w, h);
 		ctx.fillStyle = "#000000";
 		ctx.fillRect(0, 0, w, h);
 
-		// Continets
 		this.drawWorldContinents(ctx, w, h);
 
 		// Grid
@@ -59,6 +62,35 @@ enyo.kind({
 			ctx.lineTo(w, y);
 			ctx.stroke();
 		}
+
+		// Draw My Pos RED
+		var latNow = this.owner.config.lat;
+		var lonNow = this.owner.config.lon;
+
+		if (lonNow > 180) lonNow -= 360;
+		if (lonNow < -180) lonNow += 360;
+
+		var xNow = (lonNow + 180) / 360 * w;
+		var yNow = (90 - latNow) / 180 * h;
+
+		ctx.fillStyle = "#ff0000";
+		ctx.beginPath();
+		ctx.arc(xNow, yNow, 2, 0, Math.PI * 2);
+		ctx.fill();
+
+		return {
+			ctx: ctx,
+			w: w,
+			h: h
+		};
+	},
+
+	drawWorldMapWithSatellites: function() {
+		var map = this.drawWorldMap("worldmap");
+		var ctx = map.ctx;
+		var w = map.w;
+		var h = map.h;
+		var now = new Date();
 
 		// Satelitte
 		for (var i = 0; i < this.owner.$.satTrackView.tracks.length; i++) {
@@ -140,21 +172,6 @@ enyo.kind({
 			ctx.font = "10px monospace";
 			ctx.fillText(sat.name, xNow + 4, yNow);
 		}
-
-		// Draw My Pos RED
-		var latNow = this.owner.config.lat;
-		var lonNow = this.owner.config.lon;
-
-		if (lonNow > 180) lonNow -= 360;
-		if (lonNow < -180) lonNow += 360;
-
-		var xNow = (lonNow + 180) / 360 * w;
-		var yNow = (90 - latNow) / 180 * h;
-
-		ctx.fillStyle = "#ff0000";
-		ctx.beginPath();
-		ctx.arc(xNow, yNow, 2, 0, Math.PI * 2);
-		ctx.fill();
 	},
 
 	drawWorldContinents: function(ctx, w, h) {
