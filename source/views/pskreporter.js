@@ -2,7 +2,7 @@ enyo.kind({
 	name: "PSKReporterView",
 	classes: "psk-panel",
 	config: {
-		'mqtt': 'wss://mqtt.pskreporter.info:1886',
+		'mqtt': 'ws://mqtt.pskreporter.info:1885',
 		'filter': 'pskr/filter/v2/+/+',
 	},
 	topic: null,
@@ -43,20 +43,23 @@ enyo.kind({
 
 	getConnectMQTT: function() {
 		self = this;
+		console.log('Try connect MQTT');
   	this.client = mqtt.connect(this.config.mqtt, {
+			maxPacketSize: 1024 * 1024,
+			maxPacketLength: 1024 * 1024,
   	  reconnectPeriod: 1000,
   	});
 
 		this.client.on("message", function (topic, message) {
-		    var text = JSON.parse(message.toString());
-				var s = self.maidenheadToLatLon(text.sl);
-				var r = self.maidenheadToLatLon(text.rl);
+			var text = JSON.parse(message.toString());
+			var s = self.maidenheadToLatLon(text.sl);
+			var r = self.maidenheadToLatLon(text.rl);
 
-				console.log(text);
+			console.log(text);
 
-				if (s != null && r != null) {
-					self.drawLine(self.map.ctx, s.lat, s.lon, r.lat, r.lon, text.rc, self.map.w, self.map.h, self.randomColor());
-				}
+			if (s != null && r != null) {
+				self.drawLine(self.map.ctx, s.lat, s.lon, r.lat, r.lon, text.rc, self.map.w, self.map.h, self.randomColor());
+			}
 		});
 
   	this.client.on("connect", function() {
@@ -67,6 +70,8 @@ enyo.kind({
   	    if (!err) {
 					self.connect = true;
 					console.log("Subscribed: "+self.topic);
+				} else {
+		  	  console.error("MQTT Error:", err);
 				}
   	  });
   	});
@@ -81,7 +86,6 @@ enyo.kind({
 
 		locator = locator.trim();
 
-		// Mindestformat prüfen (AA00aa00)
 		var A = 'A'.charCodeAt(0);
 
 		var fieldLon = locator.charCodeAt(0) - A;
@@ -93,7 +97,7 @@ enyo.kind({
 		var subLon = locator.charCodeAt(4) - A;
 		var subLat = locator.charCodeAt(5) - A;
 
-		// Basisposition
+		// base position
 		var lon = fieldLon * 20;
 		var lat = fieldLat * 10;
 
@@ -103,7 +107,7 @@ enyo.kind({
 		lon += subLon / 12;
 		lat += subLat / 24;
 
-		// Falls 8-stellig (Extended Square)
+		// Extended Square
 		if (locator.length >= 8) {
 			var extLon = parseInt(locator.charAt(6), 10);
 			var extLat = parseInt(locator.charAt(7), 10);
@@ -111,16 +115,13 @@ enyo.kind({
 			lon += extLon * (2 / 10 / 12);   // 2° / 10 / 12
 			lat += extLat * (1 / 10 / 24);   // 1° / 10 / 24
 
-			// Mittelpunkt des erweiterten Feldes
 			lon += (2 / 10 / 12) / 2;
 			lat += (1 / 10 / 24) / 2;
 		} else {
-			// Mittelpunkt des Subsquare
 			lon += (1 / 12) / 2;
 			lat += (1 / 24) / 2;
 		}
 
-		// Offset zurückrechnen
 		lon -= 180;
 		lat -= 90;
 
@@ -175,11 +176,74 @@ enyo.kind({
 
 		ctx.strokeStyle = color;
 		ctx.lineWidth = 1;
-		ctx.font = "10px monospace";
-		ctx.fillText(call, p.x, p.y);
-		ctx.stroke();
-	}
+    ctx.stroke();
 
+		this.drawTextBox(ctx, call, p.x, p.y, 5, 5, color)
+	},
+
+	drawTextBox: function(ctx, text, x, y, padding, radius, color) {
+		ctx.font = "10px monospace";
+		ctx.fillStyle = this.darkenColor(color, 20);
+		ctx.strokeStyle = this.darkenColor(color, 30);
+		ctx.lineWidth = 1;
+
+		// get box size from text size
+		const metrics = ctx.measureText(text);
+		const textWidth = metrics.width;
+		const textHeight = 10;
+
+		const boxWidth = textWidth + padding * 2;
+		const boxHeight = textHeight + padding * 2;
+
+		// paint box
+		ctx.beginPath();
+		ctx.moveTo(x + radius, y);
+		ctx.lineTo(x + boxWidth - radius, y);
+		ctx.quadraticCurveTo(x + boxWidth, y, x + boxWidth, y + radius);
+		ctx.lineTo(x + boxWidth, y + boxHeight - radius);
+		ctx.quadraticCurveTo(x + boxWidth, y + boxHeight, x + boxWidth - radius, y + boxHeight);
+		ctx.lineTo(x + radius, y + boxHeight);
+		ctx.quadraticCurveTo(x, y + boxHeight, x, y + boxHeight - radius);
+		ctx.lineTo(x, y + radius);
+		ctx.quadraticCurveTo(x, y, x + radius, y);
+		ctx.closePath();
+
+		// box and border color
+		ctx.fillStyle = "white"; // bg color
+		ctx.fill();
+		ctx.strokeStyle = this.darkenColor(color, 20);
+		ctx.stroke();
+
+		// text
+		ctx.fillStyle = color;
+		ctx.fillText(text, x + padding, y + padding + textHeight * 0.8); // 0.8 für vertikale Ausrichtung
+	},
+
+	darkenColor: function(hexColor, amount) {
+		// hex to rbg
+		var c = hexColor.replace("#", "");
+		if (c.length === 3) {
+			c = c.split("").map(function(ch){ return ch + ch; }).join("");
+		}
+		var num = parseInt(c, 16);
+		if (isNaN(num)) return hexColor;
+
+		var r = (num >> 16) & 255;
+		var g = (num >> 8) & 255;
+		var b = num & 255;
+
+		// make it darker
+		r = Math.max(0, Math.min(255, Math.floor(r * (1 - amount / 100))));
+		g = Math.max(0, Math.min(255, Math.floor(g * (1 - amount / 100))));
+		b = Math.max(0, Math.min(255, Math.floor(b * (1 - amount / 100))));
+
+		// back to hex
+		var rHex = r.toString(16).padStart(2, "0");
+		var gHex = g.toString(16).padStart(2, "0");
+		var bHex = b.toString(16).padStart(2, "0");
+
+		return "#" + rHex + gHex + bHex;
+	}
 
 
 });
