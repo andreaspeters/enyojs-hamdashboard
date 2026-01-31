@@ -15,7 +15,7 @@ palm-package:
 	java -jar /opt/PalmSDK/0.1/share/jars/webos-tools.jar palm-package --exclude tools deploy
 
 palm-install:
-	java -jar /opt/PalmSDK/0.1/share/jars/webos-tools.jar palm-install biz.aventer.hamclock_0.1.0_all.ipk
+	java -jar /opt/PalmSDK/0.1/share/jars/webos-tools.jar palm-install biz.aventer.hamdashboard_0.2.0_all.ipk
 
 palm-run: deploy
 	java -jar /opt/PalmSDK/0.1/share/jars/webos-tools.jar palm-run --exclude tools deploy

@@ -31,7 +31,7 @@ enyo.kind({
 	],
 
 	rendered: function() {
-		this.tle = this.config.local;
+		this.tle = this.config.server;
 		this.downloadHamTLEs();
 	},
 
@@ -113,23 +113,11 @@ enyo.kind({
 		this.$.satDistance.setContent(Math.round(this.tracks[inEvent.index].distance_km));
 		var pass = this.computeAosLosForSatellite(this.tracks[inEvent.index]);
 		if (pass != null) {
-			var aos = pass.aos.toLocaleTimeString("de-DE", {
-					hour:   "2-digit",
-			    minute: "2-digit",
-			    hour12: false,
-			    timeZone: "UTC"
-			  }
-			);
-			var los = pass.los.toLocaleTimeString("de-DE", {
-					hour:   "2-digit",
-			    minute: "2-digit",
-			    hour12: false,
-			    timeZone: "UTC"
-			  }
-			);
-      this.$.satAos.setContent(aos);
-		  this.$.satLos.setContent(los);
-		  this.$.satDur.setContent(pass.duration_sec + "s");
+			var aos = pass.aos.toISOString();
+			var los = pass.los.toISOString();
+			this.$.satAos.setContent(aos.substring(11, 16));
+			this.$.satLos.setContent(los.substring(11, 16));
+			this.$.satDur.setContent(pass.duration_sec + "s");
 		}
 	},
 
