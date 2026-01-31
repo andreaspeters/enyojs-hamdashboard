@@ -8,6 +8,7 @@ enyo.kind({
 	},
 	sats: [],
 	tracks: [],
+	timer: null,
 	components: [
 		{classes:"sat-table header", components: [
 			{classes: "row", components: [
@@ -32,8 +33,21 @@ enyo.kind({
 	rendered: function() {
 		this.tle = this.config.local;
 		this.downloadHamTLEs();
-		setInterval(enyo.bind(this, this.updateSatData), 5000);
-		setInterval(enyo.bind(this, this.downloadHamTLEs), 1440000);
+	},
+
+	panelActivated: function() {
+		if (!this.timer) {
+			console.log('Enable sattrack panel');
+			setInterval(enyo.bind(this, this.downloadHamTLEs), 1440000);
+			this.timer = setInterval(enyo.bind(this, this.updateSatData), 5000);
+		}
+	},
+
+	panelDeactivated: function() {
+		if (this.timer) {
+			clearInterval(this.timer);
+			this.timer = null;
+		}
 	},
 
 	getHamSatellitesByDistance: function() {
@@ -83,6 +97,10 @@ enyo.kind({
 	},
 
   updateSatData: function() {
+		if (this.owner.config.lat == 0.00 || this.owner.config.lon == 0.00) {
+			return;
+		}
+
     const myAlt = 10;
 		this.getHamSatellitesByDistance();
 

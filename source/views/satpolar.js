@@ -2,12 +2,23 @@ enyo.kind({
 	name: "SatPolarView",
 	classes: "sattrack-panel",
 	tle: "",
+	timer: null,
 	components: [
 		{content: "<canvas id=\"skyplot\" width=\"400\" height=\"400\"></canvas>", classes:"skyplot", allowHtml: true},
 	],
 
-	rendered: function() {
-		setInterval(enyo.bind(this, this.drawSatellitesOnSkyplot), 2000);
+	panelActivated: function() {
+		if (!this.timer) {
+			console.log('Enable satpolar panel');
+			this.timer = setInterval(enyo.bind(this, this.drawSatellitesOnSkyplot), 2000);
+		}
+	},
+
+	panelDeactivated: function() {
+		if (this.timer) {
+			clearInterval(this.timer);
+			this.timer = null;
+		}
 	},
 
 	drawSkyplotGrid: function(ctx, size) {
@@ -53,6 +64,9 @@ enyo.kind({
 
 
 	drawSatellitesOnSkyplot: function() {
+		if (this.owner.config.lat == 0.00 || this.owner.config.lon == 0.00) {
+			return;
+		}
 		var maxDistanceKm = this.owner.config.distance;
 
 		var canvas = document.getElementById("skyplot");

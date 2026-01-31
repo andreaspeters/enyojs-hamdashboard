@@ -16,6 +16,7 @@ enyo.kind({
 
 	panelActivated: function() {
 		if (!this.timer) {
+			console.log("Enable satworld panel");
 			this.timer = setInterval(enyo.bind(this, this.drawWorldMapWithSatellites), 10000);
 		}
 	},

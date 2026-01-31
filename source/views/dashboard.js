@@ -6,8 +6,8 @@ enyo.kind({
 		'server': "http://localhost/~andreas/webseite-aventer/index.php?article_id=128",
 		'lat': 53.7561,
 		'lon': 9.7125,
-		'distance': 5000,
-		'callsign': "",
+		'distance': 10000,
+		'callsign': "DC6AP",
 		'gps': true,
 	},
 
@@ -86,14 +86,24 @@ enyo.kind({
 	rendered: function() {
 		this.inherited(arguments);
 
-		this.config.lat = parseFloat(localStorage.getItem('latitude'));
-		this.config.lon = parseFloat(localStorage.getItem('longitude'));
+		if (localStorage.getItem('latitude') != "") {
+			this.config.lat = parseFloat(localStorage.getItem('latitude'));
+		}
+		if (localStorage.getItem('longitude') != "") {
+			this.config.lon = parseFloat(localStorage.getItem('longitude'));
+		}
 		this.config.gps = localStorage.getItem('gps') === "true" ? true : false;
-		this.config.callsign = localStorage.getItem('callsign');
+
+		if (localStorage.getItem('callsign') != "") {
+			this.config.callsign = localStorage.getItem('callsign');
+		}
 
 		this.getCurrentUTCTime();
 		setInterval(enyo.bind(this, this.getCurrentUTCTime), 1000);
 		setInterval(enyo.bind(this, this.refresh), 2000);
+
+		this.$.satTrackView.panelActivated();
+		this.$.satPolarView.panelActivated();
 
 		if (this.config.gps) {
 			this.getGPSPostion();
@@ -135,15 +145,21 @@ enyo.kind({
 	panelChanged: function(sender) {
 		var index = sender.getIndex();
 
-		if (index === 1) {
+		if (index === 0) {
+			this.$.satTrackView.panelActivated();
+			this.$.satPolarView.panelActivated();
 			this.$.satWorldView.panelDeactivated();
 			this.$.pSKReporterView.panelDeactivated();
 		}
 		if (index === 1) {
+			this.$.satTrackView.panelDeactivated();
+			this.$.satPolarView.panelDeactivated();
 			this.$.satWorldView.panelActivated();
 			this.$.pSKReporterView.panelDeactivated();
 		}
 		if (index === 2) {
+			this.$.satTrackView.panelDeactivated();
+			this.$.satPolarView.panelDeactivated();
 			this.$.satWorldView.panelDeactivated();
 			this.$.pSKReporterView.panelActivated();
 		}

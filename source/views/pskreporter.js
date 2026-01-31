@@ -27,6 +27,7 @@ enyo.kind({
 
 	panelActivated: function() {
 		if (!this.timer) {
+			console.log('Enable psk panel');
 			this.timer = setInterval(enyo.bind(this, this.refresh), 2000);
 		}
 	},
@@ -37,7 +38,7 @@ enyo.kind({
 			this.topic = null;
 			this.connect = false;
 			this.timer = null;
-			this.client.end();
+			this.client = null;
 		}
 	},
 
