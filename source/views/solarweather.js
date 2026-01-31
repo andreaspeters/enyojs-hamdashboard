@@ -131,9 +131,11 @@ enyo.kind({
 		request.onreadystatechange = function() {
 			if (request.readyState == 4) {
 				if (request.responseText) {
-					var xmlRequest = request.responseXML.getElementsByTagName("response");
-					self.weather = self.parseSolarXML(request.responseText);
-					self.refresh();
+					if (request.responseXML != null) {
+						var xmlRequest = request.responseXML.getElementsByTagName("response");
+						self.weather = self.parseSolarXML(request.responseText);
+						self.refresh();
+					}
 				}
 			}
 		}

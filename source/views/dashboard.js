@@ -6,7 +6,7 @@ enyo.kind({
 		'server': "http://localhost/~andreas/webseite-aventer/index.php?article_id=128",
 		'lat': 53.7561,
 		'lon': 9.7125,
-		'distance': 10000,
+		'distance': 5000,
 		'callsign': "",
 		'gps': true,
 	},
@@ -38,6 +38,7 @@ enyo.kind({
 				 	index: 0,
 				 	fit: true,
 				 	style: "height: 100%;",
+					onTransitionFinish: "panelChanged",
 				 	components: [
 						{kind: "FittableColumns", style: "padding:10px;", components: [
 							{kind: "SatTrackView"},
@@ -129,6 +130,23 @@ enyo.kind({
 		this.$.lon.setContent(this.config.lon);
 		this.$.loc.setContent(this.latLonToMaidenhead());
 		this.$.call.setContent(this.config.callsign);
+	},
+
+	panelChanged: function(sender) {
+		var index = sender.getIndex();
+
+		if (index === 1) {
+			this.$.satWorldView.panelDeactivated();
+			this.$.pSKReporterView.panelDeactivated();
+		}
+		if (index === 1) {
+			this.$.satWorldView.panelActivated();
+			this.$.pSKReporterView.panelDeactivated();
+		}
+		if (index === 2) {
+			this.$.satWorldView.panelDeactivated();
+			this.$.pSKReporterView.panelActivated();
+		}
 	},
 
 	latLonToMaidenhead: function() {

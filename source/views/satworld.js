@@ -5,13 +5,26 @@ enyo.kind({
 		'geo':  "source/data/world.geojson",
 	},
 	map: null,
+	timer: null,
 	components: [
 		{content: "<canvas id=\"worldmap\" width=\"970px\" height=\"400\"></canvas>", classes:"skyplot", allowHtml: true},
 	],
 
 	rendered: function() {
 		this.loadWorldGeoJSON();
-		setInterval(enyo.bind(this, this.drawWorldMapWithSatellites), 10000);
+	},
+
+	panelActivated: function() {
+		if (!this.timer) {
+			this.timer = setInterval(enyo.bind(this, this.drawWorldMapWithSatellites), 10000);
+		}
+	},
+
+	panelDeactivated: function() {
+		if (this.timer) {
+			clearInterval(this.timer);
+			this.timer = null;
+		}
 	},
 
 	loadWorldGeoJSON: function() {

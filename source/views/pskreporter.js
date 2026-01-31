@@ -8,12 +8,12 @@ enyo.kind({
 	topic: null,
 	map: null,
 	connect: false,
+	timer: null,
 	components: [
 		{content: "<canvas id=\"worldmap-psk\" width=\"970px\" height=\"400\"></canvas>", classes:"skyplot", allowHtml: true},
 	],
 
 	rendered: function() {
-		setInterval(enyo.bind(this, this.refresh), 2000);
 	},
 
 	refresh: function() {
@@ -22,6 +22,22 @@ enyo.kind({
 		}
 		if (this.map == null) {
 			this.map = this.owner.$.satWorldView.drawWorldMap("worldmap-psk");
+		}
+	},
+
+	panelActivated: function() {
+		if (!this.timer) {
+			this.timer = setInterval(enyo.bind(this, this.refresh), 2000);
+		}
+	},
+
+	panelDeactivated: function() {
+		if (this.timer) {
+			clearInterval(this.timer);
+			this.topic = null;
+			this.connect = false;
+			this.timer = null;
+			this.client.end();
 		}
 	},
 
@@ -115,15 +131,15 @@ enyo.kind({
 	},
 
 	latLonToXY: function(lat, lon, width, height) {
-	    var x = (lon + 180) * (width / 360);
-	    var y = (90 - lat) * (height / 180);
-	    return {x: x, y: y};
+		var x = (lon + 180) * (width / 360);
+		var y = (90 - lat) * (height / 180);
+		return {x: x, y: y};
 	},
 
 	randomColor: function() {
 		const letters = '0123456789ABCDEF';
-		let color = '#';
-		for (let i = 0; i < 6; i++) {
+		var color = '#';
+		for (var i = 0; i < 6; i++) {
 			color += letters[Math.floor(Math.random() * 16)];
 		}
 		return color;
