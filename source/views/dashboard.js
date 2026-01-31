@@ -14,7 +14,7 @@ enyo.kind({
 	components:[
 		{kind: "Panels", name: "productPanel", fit: true, components: [
 			{kind: "FittableRows", fit: true, components: [
-				{kind: "FittableColumns", fit: true, components: [
+				{kind: "FittableColumns", classes: "head-info", fit: true, components: [
 					{name: "utcTime", classes: "utcTime"},
 					{name: "call", classes: "callsign"},
 					{kind: "onyx.IconButton", src:"assets/enyo-icons-master/spaz_enyo1_icons/icon-settings.png", classes:"btn-settings", ondown: "btnClickSettings"}

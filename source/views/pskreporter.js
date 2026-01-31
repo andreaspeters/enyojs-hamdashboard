@@ -17,7 +17,7 @@ enyo.kind({
 	},
 
 	refresh: function() {
-		if (this.owner.config.callsign != null && this.connect == false) {
+		if (this.owner.config.callsign != "" && this.connect == false) {
 			this.getConnectMQTT();
 		}
 		if (this.map == null) {
@@ -38,7 +38,6 @@ enyo.kind({
 			this.topic = null;
 			this.connect = false;
 			this.timer = null;
-			this.client = null;
 		}
 	},
 

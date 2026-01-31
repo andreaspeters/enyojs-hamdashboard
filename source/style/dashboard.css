@@ -12,6 +12,10 @@
 	width:200px !important;
 }
 
+.head-info {
+	width: 1024px;
+}
+
 .btn-settings {
 	height:30px !important;
 	float:right;
