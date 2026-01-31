@@ -18,7 +18,6 @@ enyo.kind({
 
 	refresh: function() {
 		if (this.owner.config.callsign != null && this.connect == false) {
-			console.log("test");
 			this.getConnectMQTT();
 		}
 		if (this.map == null) {
@@ -37,8 +36,10 @@ enyo.kind({
 				var s = self.maidenheadToLatLon(text.sl);
 				var r = self.maidenheadToLatLon(text.rl);
 
+				console.log(text);
+
 				if (s != null && r != null) {
-					self.drawLine(self.map.ctx, s.lat, s.lon, r.lat, r.lon, text.rc, self.map.w, self.map.h, '#ffffff');
+					self.drawLine(self.map.ctx, s.lat, s.lon, r.lat, r.lon, text.rc, self.map.w, self.map.h, self.randomColor());
 				}
 		});
 
@@ -119,6 +120,15 @@ enyo.kind({
 	    return {x: x, y: y};
 	},
 
+	randomColor: function() {
+		const letters = '0123456789ABCDEF';
+		let color = '#';
+		for (let i = 0; i < 6; i++) {
+			color += letters[Math.floor(Math.random() * 16)];
+		}
+		return color;
+	},
+
 	drawLine: function(ctx, lat1, lon1, lat2, lon2, call, width, height, color) {
 		var steps = 40; // mehr = runder
 		ctx.beginPath();
@@ -148,7 +158,7 @@ enyo.kind({
 		}
 
 		ctx.strokeStyle = color;
-		ctx.lineWidth = 2;
+		ctx.lineWidth = 1;
 		ctx.font = "10px monospace";
 		ctx.fillText(call, p.x, p.y);
 		ctx.stroke();
