@@ -44,6 +44,6 @@ To use older Chrome browsers with MQTT:
 
 ![clipboard_20260120163645.bmp](vx_images/clipboard_20260120163645.bmp)
 ![clipboard_20260121190005.bmp](vx_images/clipboard_20260121190005.bmp)
-![clipboard_20260131141445.bmp](vx_images/clipboard_20260131141445.bmp)
+![clipboard_20260201145923.bmp](vx_images/clipboard_20260201145923.bmp)
 ![clipboard_20260120184127.bmp](vx_images/clipboard_20260120184127.bmp)
 

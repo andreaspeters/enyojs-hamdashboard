@@ -34,11 +34,10 @@ enyo.kind({
 		// paint old data
 		for (var i = 0; i < self.data.length; i++) {
 			var text = this.data[i];
-			var s = this.maidenheadToLatLon(text.sl);
 			var r = this.maidenheadToLatLon(text.rl);
 
-			if (s != null && r != null) {
-				this.drawLine(this.map.ctx, s.lat, s.lon, r.lat, r.lon, text.rc, this.map.w, this.map.h, this.randomColor(text.rc));
+			if (r != null) {
+				this.drawLine(this.map.ctx, this.owner.config.lat, this.owner.config.lon, r.lat, r.lon, text.rc, this.map.w, this.map.h, this.randomColor(text.rc));
 			}
 		}
 	},
@@ -207,7 +206,7 @@ enyo.kind({
 		}
 
 		ctx.strokeStyle = color;
-		ctx.lineWidth = 1 / this.zoom;
+		ctx.lineWidth = 1;
     ctx.stroke();
 
 		this.drawTextBox(ctx, call, p.x, p.y, 5, 5, color)

@@ -149,13 +149,11 @@ enyo.kind({
 			this.$.satTrackView.panelActivated();
 			this.$.satPolarView.panelActivated();
 			this.$.satWorldView.panelDeactivated();
-			this.$.pSKReporterView.panelDeactivated();
 		}
 		if (index === 1) {
 			this.$.satTrackView.panelDeactivated();
 			this.$.satPolarView.panelDeactivated();
 			this.$.satWorldView.panelActivated();
-			this.$.pSKReporterView.panelDeactivated();
 		}
 		if (index === 2) {
 			this.$.satTrackView.panelDeactivated();
