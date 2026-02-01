@@ -10,15 +10,18 @@ enyo.kind({
 	connect: false,
 	timer: null,
 	data: [],
+	zoom: 1,
+	offsetX: 0,
+	offsetY: 0,
 	components: [
 		{content: "<canvas id=\"worldmap-psk\" width=\"970px\" height=\"400\"></canvas>", classes:"skyplot", allowHtml: true},
 	],
 
 	rendered: function() {
-		this.zoom = 1;
-		this.offsetX = 0;
-		this.offsetY = 0;
 		this.hasNode().addEventListener("wheel", this.bindSafely(this.wheelHandler));
+		this.hasNode().addEventListener("mousedown", this.bindSafely(this.onMouseDown));
+		this.hasNode().addEventListener("mousemove", this.bindSafely(this.onMouseMove));
+		this.hasNode().addEventListener("mouseup", this.bindSafely(this.onMouseUp));
 	},
 
 	refresh: function() {
@@ -26,7 +29,7 @@ enyo.kind({
 			this.getConnectMQTT();
 		}
 
-		this.map = this.owner.$.satWorldView.drawWorldMap("worldmap-psk", this.zoom, this.offsetX, this.offsetY);
+		this.map = this.owner.$.satWorldView.drawWorldMap("worldmap-psk", 1, 0, 0);
 
 		// paint old data
 		for (var i = 0; i < self.data.length; i++) {
@@ -35,7 +38,7 @@ enyo.kind({
 			var r = this.maidenheadToLatLon(text.rl);
 
 			if (s != null && r != null) {
-				this.drawLine(this.map.ctx, s.lat, s.lon, r.lat, r.lon, text.rc, this.map.w, this.map.h, this.randomColor());
+				this.drawLine(this.map.ctx, s.lat, s.lon, r.lat, r.lon, text.rc, this.map.w, this.map.h, this.randomColor(text.rc));
 			}
 		}
 	},
@@ -145,12 +148,30 @@ enyo.kind({
 		return {x: x, y: y};
 	},
 
-	randomColor: function() {
-		const letters = '0123456789ABCDEF';
-		var color = '#';
-		for (var i = 0; i < 6; i++) {
-			color += letters[Math.floor(Math.random() * 16)];
+	randomColor: function(callsign) {
+		if (!callsign) return "#FFFFFF";
+
+		var hash = 0;
+		for (var i = 0; i < callsign.length; i++) {
+			hash = callsign.charCodeAt(i) + ((hash << 5) - hash);
+			hash = hash & hash; // 32bit
 		}
+
+		var r = (hash >> 16) & 255;
+		var g = (hash >> 8) & 255;
+		var b = hash & 255;
+
+		// lighter color
+		r = Math.floor((r + 256) / 2);
+		g = Math.floor((g + 256) / 2);
+		b = Math.floor((b + 256) / 2);
+
+		// to hex
+		var color = "#" +
+		    ("0" + r.toString(16)).slice(-2) +
+		    ("0" + g.toString(16)).slice(-2) +
+		    ("0" + b.toString(16)).slice(-2);
+
 		return color;
 	},
 
@@ -259,31 +280,50 @@ enyo.kind({
 	},
 
 	wheelHandler: function(inEvent) {
-  	inEvent.preventDefault();
+		inEvent.preventDefault();
 
-  	const zoomFactor = 1.1;
+		var rect = this.hasNode().getBoundingClientRect();
+		var mouseX = inEvent.clientX - rect.left;
+		var mouseY = inEvent.clientY - rect.top;
 
-  	// Mousposition
-  	const rect = this.hasNode().getBoundingClientRect();
-  	const mouseX = inEvent.clientX - rect.left;
-  	const mouseY = inEvent.clientY - rect.top;
+		this.zoom = (inEvent.deltaY < 0) ? 1.1 : 0.9;
 
-  	const oldZoom = this.zoom;
+		var offsetX = mouseX - mouseX * this.zoom;
+		var offsetY = mouseY - mouseY * this.zoom;
 
-  	// Zoom in/out
-  	if (inEvent.deltaY < 0) {
-  	    this.zoom *= zoomFactor;
-  	} else {
-  	    this.zoom /= zoomFactor;
-  	}
+		this.owner.$.satWorldView.drawWorldMap("worldmap-psk", this.zoom, offsetX, offsetY);
 
-  	this.offsetX = mouseX - (mouseX - this.offsetX) * (this.zoom / oldZoom);
-  	this.offsetY = mouseY - (mouseY - this.offsetY) * (this.zoom / oldZoom);
-
-		this.owner.$.satWorldView.drawWorldMap("worldmap-psk", this.zoom, this.offsetX, this.offsetY)
-
-  	return false;
+		return false;
 	},
+
+	onMouseDown: function(e) {
+		if (e.button !== 1) return; // middle mouse btn
+		this.isDragging = true;
+		this.lastMouseX = e.clientX;
+		this.lastMouseY = e.clientY;
+	},
+
+	onMouseMove: function(e) {
+		if (!this.isDragging) return;
+
+		var dx = e.clientX - this.lastMouseX;
+		var dy = e.clientY - this.lastMouseY;
+
+		this.lastMouseX = e.clientX;
+		this.lastMouseY = e.clientY;
+
+		this.offsetX = dx;
+		this.offsetY = dy;
+
+		this.owner.$.satWorldView.drawWorldMap("worldmap-psk", 1, this.offsetX, this.offsetY);
+	},
+
+	onMouseUp: function(e) {
+		if (e.button !== 1) return;
+		this.isDragging = false;
+	},
+
+
 });
 
 
