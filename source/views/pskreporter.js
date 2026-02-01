@@ -25,8 +25,18 @@ enyo.kind({
 		if (this.owner.config.callsign != "" && this.connect == false) {
 			this.getConnectMQTT();
 		}
-		if (this.map == null) {
-			this.map = this.owner.$.satWorldView.drawWorldMap("worldmap-psk", this.zoom, this.offsetX, this.offsetY);
+
+		this.map = this.owner.$.satWorldView.drawWorldMap("worldmap-psk", this.zoom, this.offsetX, this.offsetY);
+
+		// paint old data
+		for (var i = 0; i < self.data.length; i++) {
+			var text = this.data[i];
+			var s = this.maidenheadToLatLon(text.sl);
+			var r = this.maidenheadToLatLon(text.rl);
+
+			if (s != null && r != null) {
+				this.drawLine(this.map.ctx, s.lat, s.lon, r.lat, r.lon, text.rc, this.map.w, this.map.h, this.randomColor());
+			}
 		}
 	},
 
@@ -58,12 +68,6 @@ enyo.kind({
 		this.client.on("message", function (topic, message) {
 			var text = JSON.parse(message.toString());
 			self.data.push(text);
-			var s = self.maidenheadToLatLon(text.sl);
-			var r = self.maidenheadToLatLon(text.rl);
-
-			if (s != null && r != null) {
-				self.drawLine(self.map.ctx, s.lat, s.lon, r.lat, r.lon, text.rc, self.map.w, self.map.h, self.randomColor());
-			}
 		});
 
   	this.client.on("connect", function() {
@@ -179,48 +183,53 @@ enyo.kind({
 		}
 
 		ctx.strokeStyle = color;
-		ctx.lineWidth = 1;
+		ctx.lineWidth = 1 / this.zoom;
     ctx.stroke();
 
-		this.drawTextBox(ctx, call, p.x, p.y, 5, 5, color)
+		this.drawTextBox(ctx, call, p.x + this.offsetX, p.y + this.offsetY, 5, 5, color)
 	},
 
 	drawTextBox: function(ctx, text, x, y, padding, radius, color) {
-		ctx.font = "10px monospace";
-		ctx.fillStyle = this.darkenColor(color, 20);
-		ctx.strokeStyle = this.darkenColor(color, 30);
-		ctx.lineWidth = 1;
+		var zoom = this.zoom;
 
-		// get box size from text size
-		const metrics = ctx.measureText(text);
-		const textWidth = metrics.width;
-		const textHeight = 10;
+		var baseFontSize = 10;
+		ctx.font = (baseFontSize / zoom) + "px monospace";
 
-		const boxWidth = textWidth + padding * 2;
-		const boxHeight = textHeight + padding * 2;
+		var metrics = ctx.measureText(text);
+		var textWidth = metrics.width;
+		var textHeight = baseFontSize;
+
+		var boxWidth = textWidth + (padding * 2) / zoom;
+		var boxHeight = textHeight + (padding * 2) / zoom;
+
+		var r = radius / zoom;
+		var pad = padding / zoom;
+
+		ctx.lineWidth = 1 / zoom;
 
 		// paint box
 		ctx.beginPath();
-		ctx.moveTo(x + radius, y);
-		ctx.lineTo(x + boxWidth - radius, y);
-		ctx.quadraticCurveTo(x + boxWidth, y, x + boxWidth, y + radius);
-		ctx.lineTo(x + boxWidth, y + boxHeight - radius);
-		ctx.quadraticCurveTo(x + boxWidth, y + boxHeight, x + boxWidth - radius, y + boxHeight);
-		ctx.lineTo(x + radius, y + boxHeight);
-		ctx.quadraticCurveTo(x, y + boxHeight, x, y + boxHeight - radius);
-		ctx.lineTo(x, y + radius);
-		ctx.quadraticCurveTo(x, y, x + radius, y);
+		ctx.moveTo(x + r, y);
+		ctx.lineTo(x + boxWidth - r, y);
+		ctx.quadraticCurveTo(x + boxWidth, y, x + boxWidth, y + r);
+		ctx.lineTo(x + boxWidth, y + boxHeight - r);
+		ctx.quadraticCurveTo(x + boxWidth, y + boxHeight, x + boxWidth - r, y + boxHeight);
+		ctx.lineTo(x + r, y + boxHeight);
+		ctx.quadraticCurveTo(x, y + boxHeight, x, y + boxHeight - r);
+		ctx.lineTo(x, y + r);
+		ctx.quadraticCurveTo(x, y, x + r, y);
 		ctx.closePath();
 
 		// box and border color
 		ctx.fillStyle = "white"; // bg color
 		ctx.fill();
+
 		ctx.strokeStyle = this.darkenColor(color, 20);
 		ctx.stroke();
 
 		// text
 		ctx.fillStyle = color;
-		ctx.fillText(text, x + padding, y + padding + textHeight * 0.8); // 0.8 für vertikale Ausrichtung
+		ctx.fillText(text, x + pad, y + pad + textHeight * 0.8);
 	},
 
 	darkenColor: function(hexColor, amount) {
@@ -272,18 +281,6 @@ enyo.kind({
   	this.offsetY = mouseY - (mouseY - this.offsetY) * (this.zoom / oldZoom);
 
 		this.owner.$.satWorldView.drawWorldMap("worldmap-psk", this.zoom, this.offsetX, this.offsetY)
-
-		// repaint old data
-		for (var i = 0; i < self.data.length; i++) {
-			var text = this.data[i];
-			console.log(text);
-			var s = this.maidenheadToLatLon(text.sl);
-			var r = this.maidenheadToLatLon(text.rl);
-
-			if (s != null && r != null) {
-				this.drawLine(this.map.ctx, s.lat, s.lon, r.lat, r.lon, text.rc, this.map.w, this.map.h, this.randomColor());
-			}
-		}
 
   	return false;
 	},
