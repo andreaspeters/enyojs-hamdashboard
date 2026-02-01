@@ -29,7 +29,7 @@ enyo.kind({
 			this.getConnectMQTT();
 		}
 
-		this.map = this.owner.$.satWorldView.drawWorldMap("worldmap-psk", 1, 0, 0);
+		this.map = this.owner.$.satWorldView.drawWorldMap("worldmap-psk", this.zoom, this.offsetX, this.offsetY);
 
 		// paint old data
 		for (var i = 0; i < self.data.length; i++) {
@@ -199,6 +199,9 @@ enyo.kind({
 
 			var p = this.latLonToXY(lat, lon, width, height);
 
+			p.x = p.x * this.zoom + this.offsetX;
+			p.y = p.y * this.zoom + this.offsetY;
+
 			if (i === 0) ctx.moveTo(p.x, p.y);
 			else ctx.lineTo(p.x, p.y);
 		}
@@ -207,26 +210,23 @@ enyo.kind({
 		ctx.lineWidth = 1 / this.zoom;
     ctx.stroke();
 
-		this.drawTextBox(ctx, call, p.x + this.offsetX, p.y + this.offsetY, 5, 5, color)
+		this.drawTextBox(ctx, call, p.x, p.y, 5, 5, color)
 	},
 
 	drawTextBox: function(ctx, text, x, y, padding, radius, color) {
-		var zoom = this.zoom;
-
-		var baseFontSize = 10;
-		ctx.font = (baseFontSize / zoom) + "px monospace";
+		ctx.font = "10px monospace";
 
 		var metrics = ctx.measureText(text);
 		var textWidth = metrics.width;
-		var textHeight = baseFontSize;
+		var textHeight = 10;
 
-		var boxWidth = textWidth + (padding * 2) / zoom;
-		var boxHeight = textHeight + (padding * 2) / zoom;
+		var boxWidth = textWidth + (padding * 2);
+		var boxHeight = textHeight + (padding * 2);
 
-		var r = radius / zoom;
-		var pad = padding / zoom;
+		var r = radius;
+		var pad = padding;
 
-		ctx.lineWidth = 1 / zoom;
+		ctx.lineWidth = 1;
 
 		// paint box
 		ctx.beginPath();
@@ -279,19 +279,25 @@ enyo.kind({
 		return "#" + rHex + gHex + bHex;
 	},
 
-	wheelHandler: function(inEvent) {
-		inEvent.preventDefault();
+	wheelHandler: function(e) {
+		e.preventDefault();
 
 		var rect = this.hasNode().getBoundingClientRect();
-		var mouseX = inEvent.clientX - rect.left;
-		var mouseY = inEvent.clientY - rect.top;
+		var mouseX = e.clientX - rect.left;
+		var mouseY = e.clientY - rect.top;
 
-		this.zoom = (inEvent.deltaY < 0) ? 1.1 : 0.9;
+		var oldZoom = this.zoom;
 
-		var offsetX = mouseX - mouseX * this.zoom;
-		var offsetY = mouseY - mouseY * this.zoom;
+		if (e.deltaY < 0) {
+		    this.zoom *= 1.1;
+		} else {
+		    this.zoom /= 1.1;
+		}
 
-		this.owner.$.satWorldView.drawWorldMap("worldmap-psk", this.zoom, offsetX, offsetY);
+		this.offsetX = mouseX - (mouseX - this.offsetX) * (this.zoom / oldZoom);
+		this.offsetY = mouseY - (mouseY - this.offsetY) * (this.zoom / oldZoom);
+
+		this.owner.$.satWorldView.drawWorldMap("worldmap-psk", this.zoom, this.offsetX, this.offsetY);
 
 		return false;
 	},
@@ -312,10 +318,10 @@ enyo.kind({
 		this.lastMouseX = e.clientX;
 		this.lastMouseY = e.clientY;
 
-		this.offsetX = dx;
-		this.offsetY = dy;
+		this.offsetX += dx;
+		this.offsetY += dy;
 
-		this.owner.$.satWorldView.drawWorldMap("worldmap-psk", 1, this.offsetX, this.offsetY);
+		this.owner.$.satWorldView.drawWorldMap("worldmap-psk", this.zoom, this.offsetX, this.offsetY);
 	},
 
 	onMouseUp: function(e) {
