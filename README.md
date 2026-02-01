@@ -18,6 +18,15 @@ Important: Never use this configuration for general web browsing. It is
 extremely insecure. Use it only for the dashboard and be sure to re‑enable
 security afterwards.
 
+## Features
+
+- Space Weather
+- Overview of current band conditions
+- List of the 11 nearest amateur radio satellites (including the ISS)
+- Polar view showing upcoming satellite passes over your location
+- Orbit tracking of the next 11 satellites
+- Reception reports via PSK Reporter
+
 ## TLE Update
 
 I'm using TLE files from [Celestrak](https://celestrak.org/NORAD/elements/amateur.txt).

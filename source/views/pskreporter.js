@@ -244,11 +244,11 @@ enyo.kind({
 		ctx.fillStyle = "white"; // bg color
 		ctx.fill();
 
-		ctx.strokeStyle = this.darkenColor(color, 20);
+		ctx.strokeStyle = color;
 		ctx.stroke();
 
 		// text
-		ctx.fillStyle = color;
+		ctx.fillStyle = this.darkenColor(color, 20);
 		ctx.fillText(text, x + pad, y + pad + textHeight * 0.8);
 	},
 
