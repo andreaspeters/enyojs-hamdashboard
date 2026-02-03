@@ -47,7 +47,7 @@ enyo.kind({
 		var canvas = document.getElementById(name);
 		if (!canvas) return;
 
-		ctx = canvas.getContext("2d");
+		var ctx = canvas.getContext("2d");
 		var w = canvas.width;
 		var h = canvas.height;
 
@@ -56,18 +56,17 @@ enyo.kind({
 		ctx.fillStyle = "#000000";
 		ctx.fillRect(0, 0, w, h);
 
-    ctx.save();
-    ctx.translate(offsetX, offsetY);
-    ctx.scale(zoom, zoom);
+		ctx.save();
 
-		this.drawWorldContinents(ctx, w, h);
+		this.drawWorldContinents(ctx, w, h, zoom, offsetX, offsetY);
 
 		// Grid
 		ctx.strokeStyle = "#333333";
 		ctx.lineWidth = 1;
 
 		for (var lon = -180; lon <= 180; lon += 30) {
-			var x = (lon + 180) / 360 * w;
+			var worldX = (lon + 180) / 360 * w;
+			var x = worldX * zoom + offsetX;
 			ctx.beginPath();
 			ctx.moveTo(x, 0);
 			ctx.lineTo(x, h);
@@ -75,7 +74,8 @@ enyo.kind({
 		}
 
 		for (var lat = -90; lat <= 90; lat += 30) {
-			var y = (90 - lat) / 180 * h;
+			var worldY = (90 - lat) / 180 * h;
+			var y = worldY * zoom + offsetY;
 			ctx.beginPath();
 			ctx.moveTo(0, y);
 			ctx.lineTo(w, y);
@@ -89,23 +89,25 @@ enyo.kind({
 		if (lonNow > 180) lonNow -= 360;
 		if (lonNow < -180) lonNow += 360;
 
-		var xNow = (lonNow + 180) / 360 * w;
-		var yNow = (90 - latNow) / 180 * h;
+		var worldXNow = (lonNow + 180) / 360 * w;
+		var worldYNow = (90 - latNow) / 180 * h;
+
+		var xNow = worldXNow * zoom + offsetX;
+		var yNow = worldYNow * zoom + offsetY;
 
 		ctx.fillStyle = "#ff0000";
 		ctx.beginPath();
 		ctx.arc(xNow, yNow, 2, 0, Math.PI * 2);
 		ctx.fill();
 
-		return {
-			ctx: ctx,
-			w: w,
-			h: h
-		};
+		ctx.restore();
+
+		return { ctx: ctx, w: w, h: h };
 	},
 
+
 	drawWorldMapWithSatellites: function() {
-		var map = this.drawWorldMap("worldmap");
+		var map = this.drawWorldMap("worldmap", 1, 0, 0);
 		var ctx = map.ctx;
 		var w = map.w;
 		var h = map.h;
@@ -193,7 +195,7 @@ enyo.kind({
 		}
 	},
 
-	drawWorldContinents: function(ctx, w, h) {
+	drawWorldContinents: function(ctx, w, h, zoom, offsetX, offsetY) {
 		if (!this.geojson || !this.geojson.features) return;
 
 		function lonToX(lon) {
@@ -231,16 +233,15 @@ enyo.kind({
 				if (ring.length < 2) continue;
 
 				ctx.beginPath();
-				ctx.moveTo(
-					lonToX(ring[0][0]),
-					latToY(ring[0][1])
-				);
+
+				var firstX = lonToX(ring[0][0]) * zoom + offsetX;
+				var firstY = latToY(ring[0][1]) * zoom + offsetY;
+				ctx.moveTo(firstX, firstY);
 
 				for (var i = 1; i < ring.length; i++) {
-					ctx.lineTo(
-						lonToX(ring[i][0]),
-						latToY(ring[i][1])
-					);
+					var x = lonToX(ring[i][0]) * zoom + offsetX;
+					var y = latToY(ring[i][1]) * zoom + offsetY;
+					ctx.lineTo(x, y);
 				}
 
 				ctx.closePath();

@@ -10,16 +10,19 @@ enyo.kind({
 	connect: false,
 	timer: null,
 	data: [],
+	zoom: 1,
+	offsetX: 0,
+	offsetY: 0,
 	components: [
 		{content: "PSK Reporter Map", classes: "header", style: "margin-left: 20px;"},
 		{content: "<canvas id=\"worldmap-psk\" width=\"970px\" height=\"400\"></canvas>", classes:"skyplot", allowHtml: true},
 	],
 
 	rendered: function() {
-		this.zoom = 1;
-		this.offsetX = 0;
-		this.offsetY = 0;
 		this.hasNode().addEventListener("wheel", this.bindSafely(this.wheelHandler));
+		this.hasNode().addEventListener("mousedown", this.bindSafely(this.onMouseDown));
+		this.hasNode().addEventListener("mousemove", this.bindSafely(this.onMouseMove));
+		this.hasNode().addEventListener("mouseup", this.bindSafely(this.onMouseUp));
 	},
 
 	refresh: function() {
@@ -32,11 +35,10 @@ enyo.kind({
 		// paint old data
 		for (var i = 0; i < self.data.length; i++) {
 			var text = this.data[i];
-			var s = this.maidenheadToLatLon(text.sl);
 			var r = this.maidenheadToLatLon(text.rl);
 
-			if (s != null && r != null) {
-				this.drawLine(this.map.ctx, s.lat, s.lon, r.lat, r.lon, text.rc, this.map.w, this.map.h, this.randomColor());
+			if (r != null) {
+				this.drawLine(this.map.ctx, this.owner.config.lat, this.owner.config.lon, r.lat, r.lon, text.rc, this.map.w, this.map.h, this.randomColor(text.rc));
 			}
 		}
 	},
@@ -146,12 +148,30 @@ enyo.kind({
 		return {x: x, y: y};
 	},
 
-	randomColor: function() {
-		const letters = '0123456789ABCDEF';
-		var color = '#';
-		for (var i = 0; i < 6; i++) {
-			color += letters[Math.floor(Math.random() * 16)];
+	randomColor: function(callsign) {
+		if (!callsign) return "#FFFFFF";
+
+		var hash = 0;
+		for (var i = 0; i < callsign.length; i++) {
+			hash = callsign.charCodeAt(i) + ((hash << 5) - hash);
+			hash = hash & hash; // 32bit
 		}
+
+		var r = (hash >> 16) & 255;
+		var g = (hash >> 8) & 255;
+		var b = hash & 255;
+
+		// lighter color
+		r = Math.floor((r + 256) / 2);
+		g = Math.floor((g + 256) / 2);
+		b = Math.floor((b + 256) / 2);
+
+		// to hex
+		var color = "#" +
+		    ("0" + r.toString(16)).slice(-2) +
+		    ("0" + g.toString(16)).slice(-2) +
+		    ("0" + b.toString(16)).slice(-2);
+
 		return color;
 	},
 
@@ -179,34 +199,34 @@ enyo.kind({
 
 			var p = this.latLonToXY(lat, lon, width, height);
 
+			p.x = p.x * this.zoom + this.offsetX;
+			p.y = p.y * this.zoom + this.offsetY;
+
 			if (i === 0) ctx.moveTo(p.x, p.y);
 			else ctx.lineTo(p.x, p.y);
 		}
 
 		ctx.strokeStyle = color;
-		ctx.lineWidth = 1 / this.zoom;
+		ctx.lineWidth = 1;
     ctx.stroke();
 
-		this.drawTextBox(ctx, call, p.x + this.offsetX, p.y + this.offsetY, 5, 5, color)
+		this.drawTextBox(ctx, call, p.x, p.y, 5, 5, color)
 	},
 
 	drawTextBox: function(ctx, text, x, y, padding, radius, color) {
-		var zoom = this.zoom;
-
-		var baseFontSize = 10;
-		ctx.font = (baseFontSize / zoom) + "px monospace";
+		ctx.font = "10px monospace";
 
 		var metrics = ctx.measureText(text);
 		var textWidth = metrics.width;
-		var textHeight = baseFontSize;
+		var textHeight = 10;
 
-		var boxWidth = textWidth + (padding * 2) / zoom;
-		var boxHeight = textHeight + (padding * 2) / zoom;
+		var boxWidth = textWidth + (padding * 2);
+		var boxHeight = textHeight + (padding * 2);
 
-		var r = radius / zoom;
-		var pad = padding / zoom;
+		var r = radius;
+		var pad = padding;
 
-		ctx.lineWidth = 1 / zoom;
+		ctx.lineWidth = 1;
 
 		// paint box
 		ctx.beginPath();
@@ -225,11 +245,11 @@ enyo.kind({
 		ctx.fillStyle = "white"; // bg color
 		ctx.fill();
 
-		ctx.strokeStyle = this.darkenColor(color, 20);
+		ctx.strokeStyle = color;
 		ctx.stroke();
 
 		// text
-		ctx.fillStyle = color;
+		ctx.fillStyle = this.darkenColor(color, 20);
 		ctx.fillText(text, x + pad, y + pad + textHeight * 0.8);
 	},
 
@@ -259,32 +279,57 @@ enyo.kind({
 		return "#" + rHex + gHex + bHex;
 	},
 
-	wheelHandler: function(inEvent) {
-  	inEvent.preventDefault();
+	wheelHandler: function(e) {
+		e.preventDefault();
 
-  	const zoomFactor = 1.1;
+		var rect = this.hasNode().getBoundingClientRect();
+		var mouseX = e.clientX - rect.left;
+		var mouseY = e.clientY - rect.top;
 
-  	// Mousposition
-  	const rect = this.hasNode().getBoundingClientRect();
-  	const mouseX = inEvent.clientX - rect.left;
-  	const mouseY = inEvent.clientY - rect.top;
+		var oldZoom = this.zoom;
 
-  	const oldZoom = this.zoom;
+		if (e.deltaY < 0) {
+		    this.zoom *= 1.1;
+		} else {
+		    this.zoom /= 1.1;
+		}
 
-  	// Zoom in/out
-  	if (inEvent.deltaY < 0) {
-  	    this.zoom *= zoomFactor;
-  	} else {
-  	    this.zoom /= zoomFactor;
-  	}
+		this.offsetX = mouseX - (mouseX - this.offsetX) * (this.zoom / oldZoom);
+		this.offsetY = mouseY - (mouseY - this.offsetY) * (this.zoom / oldZoom);
 
-  	this.offsetX = mouseX - (mouseX - this.offsetX) * (this.zoom / oldZoom);
-  	this.offsetY = mouseY - (mouseY - this.offsetY) * (this.zoom / oldZoom);
+		this.owner.$.satWorldView.drawWorldMap("worldmap-psk", this.zoom, this.offsetX, this.offsetY);
 
-		this.owner.$.satWorldView.drawWorldMap("worldmap-psk", this.zoom, this.offsetX, this.offsetY)
-
-  	return false;
+		return false;
 	},
+
+	onMouseDown: function(e) {
+		if (e.button !== 1) return; // middle mouse btn
+		this.isDragging = true;
+		this.lastMouseX = e.clientX;
+		this.lastMouseY = e.clientY;
+	},
+
+	onMouseMove: function(e) {
+		if (!this.isDragging) return;
+
+		var dx = e.clientX - this.lastMouseX;
+		var dy = e.clientY - this.lastMouseY;
+
+		this.lastMouseX = e.clientX;
+		this.lastMouseY = e.clientY;
+
+		this.offsetX += dx;
+		this.offsetY += dy;
+
+		this.owner.$.satWorldView.drawWorldMap("worldmap-psk", this.zoom, this.offsetX, this.offsetY);
+	},
+
+	onMouseUp: function(e) {
+		if (e.button !== 1) return;
+		this.isDragging = false;
+	},
+
+
 });
 
 

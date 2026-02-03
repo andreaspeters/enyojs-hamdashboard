@@ -18,6 +18,15 @@ Important: Never use this configuration for general web browsing. It is
 extremely insecure. Use it only for the dashboard and be sure to re‑enable
 security afterwards.
 
+## Features
+
+- Space Weather
+- Overview of current band conditions
+- List of the 11 nearest amateur radio satellites (including the ISS)
+- Polar view showing upcoming satellite passes over your location
+- Orbit tracking of the next 11 satellites
+- Reception reports via PSK Reporter
+
 ## TLE Update
 
 I'm using TLE files from [Celestrak](https://celestrak.org/NORAD/elements/amateur.txt).
@@ -44,6 +53,6 @@ To use older Chrome browsers with MQTT:
 
 ![clipboard_20260120163645.bmp](vx_images/clipboard_20260120163645.bmp)
 ![clipboard_20260121190005.bmp](vx_images/clipboard_20260121190005.bmp)
-![clipboard_20260131141445.bmp](vx_images/clipboard_20260131141445.bmp)
+![clipboard_20260201145923.bmp](vx_images/clipboard_20260201145923.bmp)
 ![clipboard_20260120184127.bmp](vx_images/clipboard_20260120184127.bmp)
 
