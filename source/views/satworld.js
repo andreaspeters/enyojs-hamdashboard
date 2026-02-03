@@ -7,6 +7,7 @@ enyo.kind({
 	map: null,
 	timer: null,
 	components: [
+		{content: "Sat Tracking Map", classes: "header", style: "margin-left: 20px;"},
 		{content: "<canvas id=\"worldmap\" width=\"970px\" height=\"400\"></canvas>", classes:"skyplot", allowHtml: true},
 	],
 

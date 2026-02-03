@@ -31,7 +31,7 @@ enyo.kind({
 	],
 
 	rendered: function() {
-		this.tle = this.config.server;
+		this.tle = this.config.local;
 		this.downloadHamTLEs();
 	},
 

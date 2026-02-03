@@ -60,6 +60,13 @@ enyo.kind({
 					{content: "MUF US Boulder", classes: "label"}, {name: "muf", allowHtml: true}
 				]},
 			]},
+			{kind: "onyx.PickerDecorator", classes: "view-picker", components: [
+				{content: ">"},
+				{kind: "onyx.Picker", onChange: "pickerChanged", classes: "view-picker", components: [
+					{content: "Solar", active: true},
+					{content: "VOACAP"}
+				]}
+			]},
 			{kind: "enyo.Table", classes: "misc-table", components: [
 				{classes: "row", components: [
 					{content: "SolarFlux (SNI)", classes: "label"}, {name: "solarflux", allowHtml: true},

@@ -11,6 +11,7 @@ enyo.kind({
 	timer: null,
 	data: [],
 	components: [
+		{content: "PSK Reporter Map", classes: "header", style: "margin-left: 20px;"},
 		{content: "<canvas id=\"worldmap-psk\" width=\"970px\" height=\"400\"></canvas>", classes:"skyplot", allowHtml: true},
 	],
 

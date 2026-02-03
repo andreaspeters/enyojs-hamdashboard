@@ -26,7 +26,7 @@ enyo.kind({
 					{content: "Loc: ", classes: "loc-pos label"}, {name: "loc", content: "JO", classes: "lon-pos"},
 				]},
 
-				{kind: "FittableColumns", style: "padding:10px;", components: [
+				{kind: "FittableColumns", style: "padding:10px; width:1020px;", components: [
 					{kind: "SolarWeatherView" },
 				]},
 
