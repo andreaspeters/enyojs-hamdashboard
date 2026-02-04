@@ -75,15 +75,15 @@ enyo.kind({
 	],
 
 	create: function () {
-	    this.inherited(arguments);
-	    console.log("VoacapView created");
-			const now = new Date();
-			this.voaparams.txname = this.owner.owner.config.loc
-			this.voaparams.txlat = this.owner.owner.config.lat;
-			this.voaparams.txlon = this.owner.owner.config.lon;
-			this.voaparams.date = now.toISOString().split('T')[0];
+		this.inherited(arguments);
+		console.log("VoacapView created");
+		const now = new Date();
+		this.voaparams.txname = this.owner.owner.config.loc
+		this.voaparams.txlat = this.owner.owner.config.lat;
+		this.voaparams.txlon = this.owner.owner.config.lon;
+		this.voaparams.date = now.toISOString().split('T')[0];
 
-	    this.loadVOACAPP();
+		this.loadVOACAPP();
 	},
 
 	loadVOACAPP: function() {
@@ -126,33 +126,15 @@ enyo.kind({
 		  this.$.bbandUTC.setContent(inEvent.index+12);
 		}
 
+		this.updateBandCells(0, "aband", inEvent, bands);
+		this.updateBandCells(12, "bband", inEvent, bands);
+	},
+
+	updateBandCells: function(indexOffset, cellPrefix, inEvent, bands) {
 		for (var i = 1; i < bands.length; i++) {
 			var band = bands[i];
-			var val = this.voa[inEvent.index][band];
-			var cell = this.$["aband" + band];
-			if (!cell) continue;
-
-      if (inEvent.index != 0) {
-				cell.setContent("&nbsp;");
-			}
-
-			this.resetCell(cell);
-
-			if (val !== undefined) {
-				if (val < 0.3) {
-					cell.addClass("red");
-				} else if (val < 0.6) {
-					cell.addClass("yellow");
-				} else {
-					cell.addClass("green");
-				}
-			}
-		}
-
-		for (var i = 1; i < bands.length; i++) {
-			var band = bands[i];
-			var val = this.voa[inEvent.index+12][band];
-			var cell = this.$["bband" + band];
+			var val = this.voa[inEvent.index+indexOffset][band];
+			var cell = this.$[cellPrefix + band];
 			if (!cell) continue;
 
       if (inEvent.index != 0) {

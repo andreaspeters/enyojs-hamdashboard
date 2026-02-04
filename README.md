@@ -51,6 +51,8 @@ To use older Chrome browsers with MQTT:
 - Core-JS JS lib @ github.com/zloirock/core-js under MIT License
 - Typedarray JS lib to support older browser @ github.com/inexorabletash/polyfill under MIT License
 
+![AI-Free coding](https://github.com/AVENTER-UG/.github/blob/main/profile/human_code_no_ai.png)
+
 ## Screenshot
 
 ![clipboard_20260120163645.bmp](vx_images/clipboard_20260120163645.bmp)
