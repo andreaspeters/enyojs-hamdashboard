@@ -11,6 +11,13 @@ enyo.kind({
 		]},
 
 		{classes: "content", components: [
+			{kind: "onyx.PickerDecorator", classes: "view-picker", components: [
+				{content: ">"},
+				{kind: "onyx.Picker", onChange: "pickerChanged", classes: "view-picker", components: [
+					{content: "Solar", active: true},
+					{content: "VOACAP"}
+				]}
+			]},
 			{kind: "enyo.Table", classes: "vhf-table", components: [
 				{classes: "header", components: [
 					{content: "Item"},
@@ -60,14 +67,7 @@ enyo.kind({
 					{content: "MUF US Boulder", classes: "label"}, {name: "muf", allowHtml: true}
 				]},
 			]},
-			{kind: "onyx.PickerDecorator", classes: "view-picker", components: [
-				{content: ">"},
-				{kind: "onyx.Picker", onChange: "pickerChanged", classes: "view-picker", components: [
-					{content: "Solar", active: true},
-					{content: "VOACAP"}
-				]}
-			]},
-			{kind: "enyo.Table", classes: "misc-table", components: [
+			{kind: "enyo.Table", name:"solarTable", classes: "misc-table", components: [
 				{classes: "row", components: [
 					{content: "SolarFlux (SNI)", classes: "label"}, {name: "solarflux", allowHtml: true},
 				]},
@@ -90,6 +90,7 @@ enyo.kind({
 					{content: "Electronflux", classes: "label"}, {name: "electronflux", allowHtml: true},
 				]},
 			]},
+			{kind: "VoacapView", name:"voacap", classes: "misc-table"}
 		]},
 	],
 
@@ -305,6 +306,21 @@ enyo.kind({
 			color: "green",
 			text: "Stable HF conditions"
 		};
+	},
+
+	pickerChanged: function(inSender, inEvent) {
+		var selected = inEvent.selected.content;
+		if (this.$.solarTable === undefined || this.$.voacap === undefined) {
+			return;
+		}
+
+		if (selected === "Solar") {
+			this.$.solarTable.show();
+			this.$.voacap.hide();
+		} else {
+			this.$.solarTable.hide();
+			this.$.voacap.show();
+		}
 	}
 });
 

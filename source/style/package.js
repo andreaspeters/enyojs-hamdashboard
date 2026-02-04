@@ -4,5 +4,6 @@ enyo.depends(
 	"jquery-ui.min.css",
 	"dashboard.css",
 	"sattrack.css",
+	"voacap.css",
 	"solarweather.css"
 );

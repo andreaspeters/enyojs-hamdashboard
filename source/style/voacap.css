@@ -1,0 +1,61 @@
+
+.voacap-table,
+.voacap-panel {
+	overflow: hidden !important;
+}
+
+.voacap-table {
+	color: #00ff66;
+	font-family:monospace;
+	font-size: 9px;
+	margin-left: 10px;
+	height: 160px;
+	background-color: #000000;
+}
+
+.voacap-table .row {
+	white-space: nowrap;
+}
+
+.voacap-header {
+	background: #222;
+	width: 10px !important;
+	color: #fff;
+}
+
+.voacap-table .item {
+	display: inline-block;
+	padding-right: 10px;
+	text-overflow: ellipsis;
+}
+
+.col-cel {
+	text-align: right;
+	border-right: 1px solid #333;
+}
+
+.left { text-align: left; }
+
+.hour {
+	width: 10px !important;
+	background: #222;
+	color: #fff;
+	font-weight: bold;
+}
+
+.red {
+	background-color: #d9534f;
+	color: white;
+}
+
+.yellow {
+	background-color: #f0ad4e;
+	color: black;
+}
+
+.green {
+	background-color: #5cb85c;
+	color: white;
+}
+
+

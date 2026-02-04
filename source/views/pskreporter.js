@@ -303,10 +303,25 @@ enyo.kind({
 	},
 
 	onMouseDown: function(e) {
-		if (e.button !== 1) return; // middle mouse btn
-		this.isDragging = true;
-		this.lastMouseX = e.clientX;
-		this.lastMouseY = e.clientY;
+		// left mouse button
+		if (e.button == 0) {
+			if (this.owner.$.solarWeatherView.$.voacap.showing) {
+				var pos = this.getLatLonFromMouse(e);
+				this.owner.$.solarWeatherView.$.voacap.voaparams.rxname = this.owner.latLonToMaidenhead(pos.lat, pos.lon);
+				this.owner.$.solarWeatherView.$.voacap.voaparams.rxlat = pos.lat;
+				this.owner.$.solarWeatherView.$.voacap.voaparams.rxlon = pos.lon;
+				this.owner.$.solarWeatherView.$.voacap.loadVOACAPP();
+			}
+		}
+		// middle mouse btn
+		if (e.button == 1) {
+			this.isDragging = true;
+			this.lastMouseX = e.clientX;
+			this.lastMouseY = e.clientY;
+		}
+		// right mouse btn
+		if (e.button == 2) {
+		}
 	},
 
 	onMouseMove: function(e) {
@@ -328,6 +343,32 @@ enyo.kind({
 		if (e.button !== 1) return;
 		this.isDragging = false;
 	},
+
+
+	getLatLonFromMouse: function (e) {
+		var rect = this.hasNode().getBoundingClientRect();
+
+		var screenX = e.clientX - rect.left;
+		var screenY = e.clientY - rect.top;
+
+		var w = this.map.w;
+		var h = this.map.h;
+
+		var worldX = (screenX - this.offsetX) / this.zoom;
+		var worldY = (screenY - this.offsetY) / this.zoom;
+
+		if (worldX < 0 || worldX > w || worldY < 0 || worldY > h) {
+		    return null;
+		}
+
+		var lon = (worldX / w) * 360 - 180;
+		var lat = 90 - (worldY / h) * 180;
+
+		return {
+			lat: lat,
+			lon: lon
+		};
+	}
 
 
 });

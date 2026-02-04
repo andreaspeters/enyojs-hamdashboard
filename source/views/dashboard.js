@@ -8,6 +8,7 @@ enyo.kind({
 		'lon': 9.7125,
 		'distance': 10000,
 		'callsign': "DC6AP",
+		'loc': "JO43US",
 		'gps': true,
 	},
 
@@ -98,6 +99,10 @@ enyo.kind({
 			this.config.callsign = localStorage.getItem('callsign');
 		}
 
+		if (localStorage.getItem('loc') != "") {
+			this.config.loc = localStorage.getItem('loc');
+		}
+
 		this.getCurrentUTCTime();
 		setInterval(enyo.bind(this, this.getCurrentUTCTime), 1000);
 		setInterval(enyo.bind(this, this.refresh), 2000);
@@ -120,6 +125,7 @@ enyo.kind({
 
 					localStorage.setItem('latitude', self.config.lat);
 					localStorage.setItem('longitude', self.config.lon);
+					localStorage.setItem("loc", this.latLonToMaidenhead(self.config.lat, self.config.lon));
 				},
 				function (err) {
 					enyo.log("GPS Error:", err.message);
@@ -138,7 +144,7 @@ enyo.kind({
 	refresh: function() {
 		this.$.lat.setContent(this.config.lat);
 		this.$.lon.setContent(this.config.lon);
-		this.$.loc.setContent(this.latLonToMaidenhead());
+		this.$.loc.setContent(this.latLonToMaidenhead(this.config.lat, this.config.lon));
 		this.$.call.setContent(this.config.callsign);
 	},
 
@@ -163,10 +169,7 @@ enyo.kind({
 		}
 	},
 
-	latLonToMaidenhead: function() {
-		var lat = parseFloat(this.config.lat);
-		var lon = parseFloat(this.config.lon);
-
+	latLonToMaidenhead: function(lat, lon) {
 		if (isNaN(lat) || isNaN(lon)) return null;
 
 		// Validierung
@@ -227,10 +230,11 @@ enyo.kind({
 		localStorage.setItem("longitude", this.$.longitude.getValue());
 		localStorage.setItem("gps", this.$.cbGPS.checked);
 		localStorage.setItem("callsign", this.$.callsign.getValue());
+		localStorage.setItem("loc", this.latLonToMaidenhead(this.config.lat, this.config.lon));
 
 		this.$.lat.setContent(this.config.lat);
 		this.$.lon.setContent(this.config.lon);
-		this.$.loc.setContent(this.latLonToMaidenhead());
+		this.$.loc.setContent(this.latLonToMaidenhead(this.config.lat, this.config.lon));
 		this.$.call.setContent(this.config.callsign);
 
 		this.$.settings.hide();

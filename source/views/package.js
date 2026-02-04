@@ -5,5 +5,6 @@ enyo.depends(
 	"satworld.js",
 	"satpolar.js",
 	"pskreporter.js",
+	"voacap.js",
 	"views.js"
 );

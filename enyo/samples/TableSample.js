@@ -3,7 +3,7 @@ enyo.kind({
 	classes: "table-sample enyo-fit",
 	components: [
 		{name: "month", classes: "section"},
-		{kind: "enyo.Table", components: [
+		{kind: "enyo.List", components: [
 			{classes: "header", components: [
 				{content: "Sun"},
 				{content: "Mon"},

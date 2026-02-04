@@ -24,8 +24,9 @@ security afterwards.
 - Overview of current band conditions
 - List of the 11 nearest amateur radio satellites (including the ISS)
 - Polar view showing upcoming satellite passes over your location
-- Orbit tracking of the next 11 satellites
+- Orbit tracking of the closest 11 satellites
 - Reception reports via PSK Reporter
+- VOCAPP table
 
 ## TLE Update
 
@@ -40,6 +41,7 @@ storage.
 - Solarweather data @ hamqsl.com
 - TLE data @ celestrak.org
 - PSK Reporter data @ pskreporter.info
+- VOACAP Data @ voacap.com
 
 - Satellite JS lib @ github.com/shashwatak under MIT License
 - MQTT JS lib @ github.com/mqttjs/MQTT.js under MIT License
