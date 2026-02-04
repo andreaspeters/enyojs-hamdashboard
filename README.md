@@ -1,8 +1,8 @@
 # HAMRadio Dashboard
 
 I've developed a hamradio dashboard for my deprecated HP WebOS tablet (the
-TouchPad). It displays solar weather, band conditions, and the 11 closest
-ham‑radio satellites.
+TouchPad). It displays solar weather, band conditions, the 11 closest
+ham‑radio satellites and data from PSK Reporter.
 
 It also works in any Chrome‑based browser, but you must disable web‑security
 so the page can fetch TLE data and solar‑weather information from external sites.
@@ -26,7 +26,8 @@ security afterwards.
 - Polar view showing upcoming satellite passes over your location
 - Orbit tracking of the closest 11 satellites
 - Reception reports via PSK Reporter
-- VOCAPP table
+- VOCAPP table (choose destination via PSK Reporter Map)
+
 
 ## TLE Update
 

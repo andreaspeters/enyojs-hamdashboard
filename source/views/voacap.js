@@ -82,8 +82,8 @@ enyo.kind({
 		this.voaparams.txlat = this.owner.owner.config.lat;
 		this.voaparams.txlon = this.owner.owner.config.lon;
 		this.voaparams.date = now.toISOString().split('T')[0];
-
 		this.loadVOACAPP();
+		this.timer = setInterval(enyo.bind(this, this.loadVOACAPP), 1440000);
 	},
 
 	loadVOACAPP: function() {
