@@ -19,18 +19,26 @@ enyo.kind({
 	],
 
 	rendered: function() {
+		this.timer = setInterval(enyo.bind(this, this.refresh), 2000);
 		this.hasNode().addEventListener("wheel", this.bindSafely(this.wheelHandler));
 		this.hasNode().addEventListener("mousedown", this.bindSafely(this.onMouseDown));
 		this.hasNode().addEventListener("mousemove", this.bindSafely(this.onMouseMove));
 		this.hasNode().addEventListener("mouseup", this.bindSafely(this.onMouseUp));
+
+		this.hasNode().addEventListener('touchstart', this.bindSafely(this.onMouseDown));
 	},
 
 	refresh: function() {
+		if (this.map == null) {
+			this.map = this.owner.$.satWorldView.drawWorldMap("worldmap-psk", this.zoom, this.offsetX, this.offsetY);
+		}
+
+		// right now, mqtt does not work under webos
+		if (window.PalmSystem) return;
+
 		if (this.owner.config.callsign != "" && this.connect == false) {
 			this.getConnectMQTT();
 		}
-
-		this.map = this.owner.$.satWorldView.drawWorldMap("worldmap-psk", this.zoom, this.offsetX, this.offsetY);
 
 		// paint old data
 		for (var i = 0; i < self.data.length; i++) {
@@ -40,22 +48,6 @@ enyo.kind({
 			if (r != null) {
 				this.drawLine(this.map.ctx, this.owner.config.lat, this.owner.config.lon, r.lat, r.lon, text.rc, this.map.w, this.map.h, this.randomColor(text.rc));
 			}
-		}
-	},
-
-	panelActivated: function() {
-		if (!this.timer) {
-			console.log('Enable psk panel');
-			this.timer = setInterval(enyo.bind(this, this.refresh), 2000);
-		}
-	},
-
-	panelDeactivated: function() {
-		if (this.timer) {
-			clearInterval(this.timer);
-			this.topic = null;
-			this.connect = false;
-			this.timer = null;
 		}
 	},
 
@@ -303,8 +295,9 @@ enyo.kind({
 	},
 
 	onMouseDown: function(e) {
+		e.preventDefault();
 		// left mouse button
-		if (e.button == 0) {
+		if (e.button != 1 && e.button != 2) {
 			if (this.owner.$.solarWeatherView.$.voacap.showing) {
 				var pos = this.getLatLonFromMouse(e);
 				this.owner.$.solarWeatherView.$.voacap.voaparams.rxname = this.owner.latLonToMaidenhead(pos.lat, pos.lon);

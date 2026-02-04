@@ -165,7 +165,6 @@ enyo.kind({
 			this.$.satTrackView.panelDeactivated();
 			this.$.satPolarView.panelDeactivated();
 			this.$.satWorldView.panelDeactivated();
-			this.$.pSKReporterView.panelActivated();
 		}
 	},
 
