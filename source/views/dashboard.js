@@ -199,7 +199,7 @@ enyo.kind({
 	},
 
 	getCurrentUTCTime: function() {
-		const now = new Date();
+		var now = new Date();
 		this.$.utcTime.setContent(now.toISOString().split('T')[1].split('.')[0] + ' UTC');
 	},
 

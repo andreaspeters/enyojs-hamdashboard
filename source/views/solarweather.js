@@ -5,6 +5,8 @@ enyo.kind({
 		'server': "https://www.hamqsl.com/solarxml.php"
 	},
 	weather: {},
+	refreshTimer: null,
+	requestInProgress: false,
 	components: [
 		{classes: "goodday", components: [
 			{name: "goodday", allowHtml: true},
@@ -96,7 +98,17 @@ enyo.kind({
 
 	rendered: function() {
 		this.getData();
-		setInterval(enyo.bind(this, this.getData), 60000);
+		if (!this.refreshTimer) {
+			this.refreshTimer = setInterval(enyo.bind(this, this.getData), 60000);
+		}
+	},
+
+	destroy: function() {
+		if (this.refreshTimer) {
+			clearInterval(this.refreshTimer);
+			this.refreshTimer = null;
+		}
+		this.inherited(arguments);
 	},
 
 	refresh: function() {
@@ -133,21 +145,36 @@ enyo.kind({
 	},
 
 	getData: function() {
-		var request = new XMLHttpRequest()
-		var self = this
+		if (this.requestInProgress) return;
+
+		this.requestInProgress = true;
+		var request = new XMLHttpRequest();
+		var self = this;
 		request.open('GET', this.config.server, true);
 		request.onreadystatechange = function() {
 			if (request.readyState == 4) {
-				if (request.responseText) {
-					if (request.responseXML != null) {
-						var xmlRequest = request.responseXML.getElementsByTagName("response");
-						self.weather = self.parseSolarXML(request.responseText);
+				self.requestInProgress = false;
+				if (request.status >= 200 && request.status < 300 && request.responseText) {
+					try {
+						var weather = self.parseSolarXML(request.responseText);
+						if (weather.vhf.length < 5 || weather.bands.day.length < 4 || weather.bands.night.length < 4) return;
+						self.weather = weather;
 						self.refresh();
+					} catch (e) {
+						console.error("Invalid solar weather response:", e);
 					}
 				}
 			}
 		}
-		request.send();
+		request.onerror = function() {
+			self.requestInProgress = false;
+		};
+		try {
+			request.send();
+		} catch (e) {
+			this.requestInProgress = false;
+			console.error("Solar weather request failed:", e);
+		}
 	},
 
 	parseSolarXML: function(xmlText) {
@@ -168,7 +195,7 @@ enyo.kind({
 			sunspots: Number(getText("sunspots")),
 			heliumline: Number(getText("heliumline")),
 			protonflux: Number(getText("protonflux")),
-			electronflux: Number(getText("electonflux")),
+			electronflux: Number(getText("electronflux")),
 			aurora: Number(getText("aurora")),
 			solarwind: Number(getText("solarwind")),
 			magneticfield: Number(getText("magneticfield")),

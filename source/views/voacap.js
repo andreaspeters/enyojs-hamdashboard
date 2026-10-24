@@ -77,7 +77,7 @@ enyo.kind({
 	create: function () {
 		this.inherited(arguments);
 		console.log("VoacapView created");
-		const now = new Date();
+		var now = new Date();
 		this.voaparams.txname = this.owner.owner.config.loc
 		this.voaparams.txlat = this.owner.owner.config.lat;
 		this.voaparams.txlon = this.owner.owner.config.lon;

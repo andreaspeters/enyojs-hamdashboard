@@ -22,10 +22,10 @@ enyo.kind({
 	},
 
 	drawSkyplotGrid: function(ctx, size) {
-		const cx = size / 2;
-		const cy = size / 2;
-		const rOuter = size * 0.45;
-		const rInner = rOuter * 0.5;
+		var cx = size / 2;
+		var cy = size / 2;
+		var rOuter = size * 0.45;
+		var rInner = rOuter * 0.5;
 
 		ctx.clearRect(0, 0, size, size);
 

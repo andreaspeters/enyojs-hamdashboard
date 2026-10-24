@@ -8,8 +8,11 @@ enyo.kind({
 	topic: null,
 	map: null,
 	connect: false,
+	connecting: false,
 	timer: null,
 	data: [],
+	drawnCount: 0,
+	redrawReports: false,
 	zoom: 1,
 	offsetX: 0,
 	offsetY: 0,
@@ -19,7 +22,7 @@ enyo.kind({
 	],
 
 	rendered: function() {
-		this.timer = setInterval(enyo.bind(this, this.refresh), 2000);
+		if (!this.timer) this.timer = setInterval(enyo.bind(this, this.refresh), 2000);
 		this.hasNode().addEventListener("wheel", this.bindSafely(this.wheelHandler));
 		this.hasNode().addEventListener("mousedown", this.bindSafely(this.onMouseDown));
 		this.hasNode().addEventListener("mousemove", this.bindSafely(this.onMouseMove));
@@ -28,20 +31,36 @@ enyo.kind({
 		this.hasNode().addEventListener('touchstart', this.bindSafely(this.onMouseDown));
 	},
 
+	destroy: function() {
+		if (this.timer) {
+			clearInterval(this.timer);
+			this.timer = null;
+		}
+		if (this.client && this.client.end) this.client.end();
+		this.inherited(arguments);
+	},
+
 	refresh: function() {
 		if (this.map == null) {
 			this.map = this.owner.$.satWorldView.drawWorldMap("worldmap-psk", this.zoom, this.offsetX, this.offsetY);
+			this.drawnCount = 0;
 		}
 
-		// right now, mqtt does not work under webos
-		if (window.PalmSystem) return;
+		// Try MQTT/WebSocket on webOS when its browser exposes the WebSocket API.
+		if (window.PalmSystem && typeof WebSocket === "undefined") return;
 
-		if (this.owner.config.callsign != "" && this.connect == false) {
+		if (this.owner.config.callsign != "" && !this.connect && !this.connecting) {
 			this.getConnectMQTT();
 		}
 
-		// paint old data
-		for (var i = 0; i < self.data.length; i++) {
+		if (this.redrawReports) {
+			this.map = this.owner.$.satWorldView.drawWorldMap("worldmap-psk", this.zoom, this.offsetX, this.offsetY);
+			this.drawnCount = 0;
+			this.redrawReports = false;
+		}
+
+		// Draw each report once; redraw only when the retained data window rolls over.
+		for (var i = this.drawnCount; i < this.data.length; i++) {
 			var text = this.data[i];
 			var r = this.maidenheadToLatLon(text.rl);
 
@@ -49,39 +68,60 @@ enyo.kind({
 				this.drawLine(this.map.ctx, this.owner.config.lat, this.owner.config.lon, r.lat, r.lon, text.rc, this.map.w, this.map.h, this.randomColor(text.rc));
 			}
 		}
+		this.drawnCount = this.data.length;
 	},
 
 	getConnectMQTT: function() {
-		self = this;
+		if (this.client || this.connecting || this.connect || !this.owner.config.callsign) return;
+		this.connecting = true;
+		var self = this;
 		console.log('Try connect MQTT');
-  	this.client = mqtt.connect(this.config.mqtt, {
+		try {
+		this.client = mqtt.connect(this.config.mqtt, {
 			maxPacketSize: 1024 * 1024,
 			maxPacketLength: 1024 * 1024,
-  	  reconnectPeriod: 1000,
-  	});
-
-		this.client.on("message", function (topic, message) {
-			var text = JSON.parse(message.toString());
-			self.data.push(text);
+			reconnectPeriod: 1000
 		});
 
-  	this.client.on("connect", function() {
-  	  console.log("Connected with PSKReporter MQTT Broker!");
+		this.client.on("message", function (topic, message) {
+			try {
+				var text = JSON.parse(message.toString());
+				if (!text || !text.rl || !text.rc) return;
+				self.data.push(text);
+				if (self.data.length > 1000) {
+					self.data.shift();
+					self.redrawReports = true;
+				}
+			} catch (e) {
+				console.error("Invalid PSK Reporter message:", e);
+			}
+		});
 
-  	  self.topic = self.config.filter+'/'+self.owner.config.callsign+'/#';
-  	  self.client.subscribe(self.topic, function(err) {
-  	    if (!err) {
+		this.client.on("connect", function() {
+			console.log("Connected with PSKReporter MQTT Broker!");
+			self.topic = self.config.filter+'/'+self.owner.config.callsign+'/#';
+			self.client.subscribe(self.topic, function(err) {
+				if (!err) {
+					self.connecting = false;
 					self.connect = true;
 					console.log("Subscribed: "+self.topic);
 				} else {
-		  	  console.error("MQTT Error:", err);
+					self.connecting = false;
+					console.error("MQTT Error:", err);
 				}
-  	  });
-  	});
+			});
+		});
 
-  	this.client.on("error", function(err) {
-  	  console.error("MQTT Error:", err);
-  	});
+		this.client.on("error", function(err) {
+			console.error("MQTT Error:", err);
+		});
+		this.client.on("close", function() {
+			self.connect = false;
+		});
+	} catch (e) {
+		this.connecting = false;
+		console.error("PSK Reporter connection failed:", e);
+	}
 	},
 
 	maidenheadToLatLon: function(locator) {
@@ -264,9 +304,9 @@ enyo.kind({
 		b = Math.max(0, Math.min(255, Math.floor(b * (1 - amount / 100))));
 
 		// back to hex
-		var rHex = r.toString(16).padStart(2, "0");
-		var gHex = g.toString(16).padStart(2, "0");
-		var bHex = b.toString(16).padStart(2, "0");
+		var rHex = ("0" + r.toString(16)).slice(-2);
+		var gHex = ("0" + g.toString(16)).slice(-2);
+		var bHex = ("0" + b.toString(16)).slice(-2);
 
 		return "#" + rHex + gHex + bHex;
 	},
@@ -289,7 +329,9 @@ enyo.kind({
 		this.offsetX = mouseX - (mouseX - this.offsetX) * (this.zoom / oldZoom);
 		this.offsetY = mouseY - (mouseY - this.offsetY) * (this.zoom / oldZoom);
 
-		this.owner.$.satWorldView.drawWorldMap("worldmap-psk", this.zoom, this.offsetX, this.offsetY);
+		this.map = this.owner.$.satWorldView.drawWorldMap("worldmap-psk", this.zoom, this.offsetX, this.offsetY);
+		this.drawnCount = 0;
+		this.redrawReports = false;
 
 		return false;
 	},
@@ -329,7 +371,9 @@ enyo.kind({
 		this.offsetX += dx;
 		this.offsetY += dy;
 
-		this.owner.$.satWorldView.drawWorldMap("worldmap-psk", this.zoom, this.offsetX, this.offsetY);
+		this.map = this.owner.$.satWorldView.drawWorldMap("worldmap-psk", this.zoom, this.offsetX, this.offsetY);
+		this.drawnCount = 0;
+		this.redrawReports = false;
 	},
 
 	onMouseUp: function(e) {
