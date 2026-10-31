@@ -87,20 +87,27 @@ enyo.kind({
 	rendered: function() {
 		this.inherited(arguments);
 
-		if (localStorage.getItem('latitude') != "") {
-			this.config.lat = parseFloat(localStorage.getItem('latitude'));
+		var storedLatitude = localStorage.getItem('latitude');
+		var parsedLatitude = parseFloat(storedLatitude);
+		if (storedLatitude !== null && storedLatitude !== "" && !isNaN(parsedLatitude)) {
+			this.config.lat = parsedLatitude;
 		}
-		if (localStorage.getItem('longitude') != "") {
-			this.config.lon = parseFloat(localStorage.getItem('longitude'));
+		var storedLongitude = localStorage.getItem('longitude');
+		var parsedLongitude = parseFloat(storedLongitude);
+		if (storedLongitude !== null && storedLongitude !== "" && !isNaN(parsedLongitude)) {
+			this.config.lon = parsedLongitude;
 		}
-		this.config.gps = localStorage.getItem('gps') === "true" ? true : false;
+		var storedGps = localStorage.getItem('gps');
+		this.config.gps = storedGps === "true";
 
-		if (localStorage.getItem('callsign') != "") {
-			this.config.callsign = localStorage.getItem('callsign');
+		var storedCallsign = localStorage.getItem('callsign');
+		if (storedCallsign !== null && storedCallsign !== "") {
+			this.config.callsign = storedCallsign;
 		}
 
-		if (localStorage.getItem('loc') != "") {
-			this.config.loc = localStorage.getItem('loc');
+		var storedLoc = localStorage.getItem('loc');
+		if (storedLoc !== null && storedLoc !== "") {
+			this.config.loc = storedLoc;
 		}
 
 		this.getCurrentUTCTime();
@@ -155,16 +162,19 @@ enyo.kind({
 			this.$.satTrackView.panelActivated();
 			this.$.satPolarView.panelActivated();
 			this.$.satWorldView.panelDeactivated();
+			this.$.pskReporterView.panelDeactivated();
 		}
 		if (index === 1) {
 			this.$.satTrackView.panelDeactivated();
 			this.$.satPolarView.panelDeactivated();
 			this.$.satWorldView.panelActivated();
+			this.$.pskReporterView.panelDeactivated();
 		}
 		if (index === 2) {
 			this.$.satTrackView.panelDeactivated();
 			this.$.satPolarView.panelDeactivated();
 			this.$.satWorldView.panelDeactivated();
+			this.$.pskReporterView.panelActivated();
 		}
 	},
 

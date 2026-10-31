@@ -6,16 +6,20 @@ enyo.kind({
 	},
 	map: null,
 	timer: null,
+	geojsonRequestInProgress: false,
+	panelActive: false,
 	components: [
 		{content: "Sat Tracking Map", classes: "header", style: "margin-left: 20px;"},
 		{content: "<canvas id=\"worldmap\" width=\"970px\" height=\"400\"></canvas>", classes:"skyplot", allowHtml: true},
 	],
 
-	rendered: function() {
-		this.loadWorldGeoJSON();
-	},
-
 	panelActivated: function() {
+		this.panelActive = true;
+		if (this.geojson) {
+			if (this.map == null) this.map = this.drawWorldMap("worldmap", 1, 0, 0);
+		} else if (!this.geojsonRequestInProgress) {
+			this.loadWorldGeoJSON();
+		}
 		if (!this.timer) {
 			console.log("Enable satworld panel");
 			this.timer = setInterval(enyo.bind(this, this.drawWorldMapWithSatellites), 10000);
@@ -23,6 +27,7 @@ enyo.kind({
 	},
 
 	panelDeactivated: function() {
+		this.panelActive = false;
 		if (this.timer) {
 			clearInterval(this.timer);
 			this.timer = null;
@@ -30,16 +35,25 @@ enyo.kind({
 	},
 
 	loadWorldGeoJSON: function() {
+		if (this.geojson || this.geojsonRequestInProgress) return;
+		this.geojsonRequestInProgress = true;
 		var ajax = new enyo.Ajax({url: this.config.geo, handleAs: "json"});
 		ajax.response(this, "onWorldGeoJSONLoaded");
+		ajax.error(this, "onWorldGeoJSONError");
 		ajax.go();
 	},
 
 	onWorldGeoJSONLoaded: function(inSender, inResponse) {
+		this.geojsonRequestInProgress = false;
 		this.geojson = inResponse;
-		if (this.map == null) {
+		if (this.panelActive && this.map == null) {
 			this.map = this.drawWorldMap("worldmap", 1, 0, 0);
 		}
+	},
+
+	onWorldGeoJSONError: function(inSender, inError) {
+		this.geojsonRequestInProgress = false;
+		console.error("World map GeoJSON request failed:", inError);
 	},
 
 

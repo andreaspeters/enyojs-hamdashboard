@@ -11,6 +11,7 @@ enyo.kind({
 	connecting: false,
 	timer: null,
 	data: [],
+	panelActive: false,
 	drawnCount: 0,
 	redrawReports: false,
 	zoom: 1,
@@ -22,13 +23,27 @@ enyo.kind({
 	],
 
 	rendered: function() {
-		if (!this.timer) this.timer = setInterval(enyo.bind(this, this.refresh), 2000);
 		this.hasNode().addEventListener("wheel", this.bindSafely(this.wheelHandler));
 		this.hasNode().addEventListener("mousedown", this.bindSafely(this.onMouseDown));
 		this.hasNode().addEventListener("mousemove", this.bindSafely(this.onMouseMove));
 		this.hasNode().addEventListener("mouseup", this.bindSafely(this.onMouseUp));
 
 		this.hasNode().addEventListener('touchstart', this.bindSafely(this.onMouseDown));
+	},
+
+	panelActivated: function() {
+		this.panelActive = true;
+		var worldView = this.owner.$.satWorldView;
+		if (worldView && !worldView.geojson) worldView.loadWorldGeoJSON();
+		if (!this.timer) this.timer = setInterval(enyo.bind(this, this.refresh), 2000);
+	},
+
+	panelDeactivated: function() {
+		this.panelActive = false;
+		if (this.timer) {
+			clearInterval(this.timer);
+			this.timer = null;
+		}
 	},
 
 	destroy: function() {
@@ -41,8 +56,11 @@ enyo.kind({
 	},
 
 	refresh: function() {
+		var worldView = this.owner.$.satWorldView;
+		if (!worldView || !worldView.geojson) return;
+
 		if (this.map == null) {
-			this.map = this.owner.$.satWorldView.drawWorldMap("worldmap-psk", this.zoom, this.offsetX, this.offsetY);
+			this.map = worldView.drawWorldMap("worldmap-psk", this.zoom, this.offsetX, this.offsetY);
 			this.drawnCount = 0;
 		}
 
@@ -54,7 +72,7 @@ enyo.kind({
 		}
 
 		if (this.redrawReports) {
-			this.map = this.owner.$.satWorldView.drawWorldMap("worldmap-psk", this.zoom, this.offsetX, this.offsetY);
+			this.map = worldView.drawWorldMap("worldmap-psk", this.zoom, this.offsetX, this.offsetY);
 			this.drawnCount = 0;
 			this.redrawReports = false;
 		}

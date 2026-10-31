@@ -2,7 +2,7 @@
 
 PALM_DEVICE ?= topaz-linux
 PALM_APP_ID ?= biz.aventer.hamdashboard
-PALM_PACKAGE ?= biz.aventer.hamdashboard_0.2.0_all.ipk
+PALM_PACKAGE ?= biz.aventer.hamdashboard_0.3.0_all.ipk
 PALM_REMOTE_PACKAGE ?= /tmp/$(PALM_PACKAGE)
 
 deploy:

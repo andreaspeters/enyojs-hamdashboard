@@ -16,6 +16,7 @@ enyo.kind({
 	passQueue: null,
 	pendingPasses: null,
 	passTimer: null,
+	satCalculation: null,
 
 	create: function() {
 		this.inherited(arguments);
@@ -69,50 +70,67 @@ enyo.kind({
 	},
 
 	getHamSatellitesByDistance: function() {
-		var now = new Date();
-		var observerGd = {
-			latitude: satellite.degreesToRadians(this.owner.config.lat),
-			longitude: satellite.degreesToRadians(this.owner.config.lon),
-			height: 10 / 1000.0
+		if (this.satCalculation) return;
+		this.satCalculation = {
+			sats: this.sats.slice(0),
+			now: new Date(),
+			observerGd: {
+				latitude: satellite.degreesToRadians(this.owner.config.lat),
+				longitude: satellite.degreesToRadians(this.owner.config.lon),
+				height: 10 / 1000.0
+			},
+			index: 0,
+			tracks: []
 		};
+		this.processSatelliteBatch();
+	},
 
-		this.tracks = [];
+	processSatelliteBatch: function() {
+		var calculation = this.satCalculation;
+		if (!calculation) return;
 
-		if (!this.sats.length) return;
-
-		for (var i = 0; i < this.sats.length; i++) {
-			var sat = this.sats[i];
+		var work = 0;
+		var maxWorkPerTurn = 10;
+		while (work < maxWorkPerTurn && calculation.index < calculation.sats.length) {
+			var sat = calculation.sats[calculation.index++];
+			work++;
 			try {
 				var satrec = satellite.twoline2satrec(sat.tle1, sat.tle2);
-				var pv = satellite.propagate(satrec, now);
+				var pv = satellite.propagate(satrec, calculation.now);
 				if (!pv.position) continue;
 
-				var gmst = satellite.gstime(now);
-
+				var gmst = satellite.gstime(calculation.now);
 				var geodetic = satellite.eciToGeodetic(pv.position, gmst);
 				var ecf = satellite.eciToEcf(pv.position, gmst);
-				var look = satellite.ecfToLookAngles(observerGd, ecf);
+				var look = satellite.ecfToLookAngles(calculation.observerGd, ecf);
 
-				this.tracks.push({
-				    tle1: sat.tle1,
-				    tle2: sat.tle2,
-				    name: sat.name,
-				    latitude: satellite.radiansToDegrees(geodetic.latitude),
-				    longitude: satellite.radiansToDegrees(geodetic.longitude),
-				    altitude_km: geodetic.height,
-				    azimuth_deg: satellite.radiansToDegrees(look.azimuth),
-				    elevation_deg: satellite.radiansToDegrees(look.elevation),
-				    distance_km: look.rangeSat
+				calculation.tracks.push({
+					tle1: sat.tle1,
+					tle2: sat.tle2,
+					name: sat.name,
+					latitude: satellite.radiansToDegrees(geodetic.latitude),
+					longitude: satellite.radiansToDegrees(geodetic.longitude),
+					altitude_km: geodetic.height,
+					azimuth_deg: satellite.radiansToDegrees(look.azimuth),
+					elevation_deg: satellite.radiansToDegrees(look.elevation),
+					distance_km: look.rangeSat
 				});
 			} catch (e) {
 			}
 		}
 
+		if (calculation.index < calculation.sats.length) {
+			setTimeout(enyo.bind(this, this.processSatelliteBatch), 10);
+			return;
+		}
 
-		this.tracks.sort(function(a, b) {
-		    return a.distance_km - b.distance_km;
+		calculation.tracks.sort(function(a, b) {
+			return a.distance_km - b.distance_km;
 		});
-		this.tracks = this.tracks.slice(0, 11);
+		this.tracks = calculation.tracks.slice(0, 11);
+		this.satCalculation = null;
+		this.$.satList.setCount(this.tracks.length);
+		this.$.satList.render();
 	},
 
   updateSatData: function() {
@@ -121,9 +139,6 @@ enyo.kind({
 		}
 
     this.getHamSatellitesByDistance();
-
-		this.$.satList.setCount(this.tracks.length);
-		this.$.satList.render();
 	},
 
 	setupSatList: function(inSender, inEvent) {
@@ -296,6 +311,7 @@ enyo.kind({
 			return;
 		}
 		this.sats = sats;
+		this.satCalculation = null;
 		this.clearPassCalculations();
 		this.passCache = {};
 	},
